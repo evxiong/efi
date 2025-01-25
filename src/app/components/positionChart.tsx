@@ -35,17 +35,18 @@ export default function PositionChart({ probs }: { probs: number[] }) {
           label={{
             value: "Position",
             position: "insideBottom",
-            offset: 0,
+            offset: -1,
             fontSize: 11,
-            fontWeight: 600,
+            fontWeight: 500,
+            fill: "#6b7280",
           }}
           dataKey="position"
           tickLine={false}
           tickCount={20}
           tickMargin={1}
           axisLine={false}
-          fontSize={10}
-          fontWeight={600}
+          className="text-[10px] font-semibold"
+          tick={{ fill: "#6b7280" }}
         />
         <ChartTooltip
           cursor={{ fill: "#e5e7eb", fillOpacity: 0.75 }}

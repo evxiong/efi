@@ -10,9 +10,10 @@ import {
 import {
   IconCaretDownFilled,
   IconCaretUpFilled,
+  IconCheck,
   IconEqual,
 } from "@tabler/icons-react";
-import { Row, rows } from "../data/tableData";
+import { Row } from "../data/tableData";
 import {
   Tooltip,
   TooltipContent,
@@ -27,173 +28,208 @@ import {
 import PositionChart from "./positionChart";
 import { numberToOrdinal } from "../lib/utils";
 
-export default function TableTab() {
+export default function TableTab({
+  rows,
+  showDetails,
+}: {
+  rows: Row[] | undefined;
+  showDetails: boolean;
+}) {
   return (
-    <div className="flex flex-col gap-4">
-      <div className="text-sm text-gray-500">
-        Last updated: 5:59pm. Includes 10 of 10 matches played in Matchweek 22
-      </div>
-      <TooltipProvider delayDuration={0} skipDelayDuration={0}>
-        <Table>
-          <TableHeader>
-            <TableRow className="text-xs text-gray-500 hover:bg-transparent">
-              <TableHead className="w-20 min-w-20">RK</TableHead>
-              <TableHead className="min-w-44">CLUB</TableHead>
-              <TableHead className="w-16 min-w-16 text-center text-gray-900">
-                <Tooltip>
-                  <TooltipTrigger>PLFI</TooltipTrigger>
-                  <TooltipContent>
-                    <StatExplainer
-                      abbrev="PLFI"
-                      full="Premier League Football Index"
-                      desc="Expected percentage of possible points this team would
+    <>
+      {rows && (
+        <TooltipProvider delayDuration={0} skipDelayDuration={0}>
+          <Table>
+            <TableHeader>
+              <TableRow className="text-xs text-gray-500 hover:bg-transparent">
+                <TableHead className="w-20 min-w-20">RK</TableHead>
+                <TableHead className="min-w-44">CLUB</TableHead>
+                <TableHead className="w-16 min-w-16 text-center text-gray-900">
+                  <Tooltip>
+                    <TooltipTrigger>PLFI</TooltipTrigger>
+                    <TooltipContent>
+                      <StatExplainer
+                        abbrev="PLFI"
+                        full="Premier League Football Index"
+                        desc="Expected percent of possible points this team would
                         gain against an average Premier League opponent on a
                         neutral pitch."
-                      note="Higher is better"
-                    />
-                  </TooltipContent>
-                </Tooltip>
-              </TableHead>
-              <TableHead className="w-12 min-w-12 text-center text-gray-900">
-                <Tooltip>
-                  <TooltipTrigger>OFF</TooltipTrigger>
-                  <TooltipContent>
-                    <StatExplainer
-                      abbrev="OFF"
-                      full="Offensive Rating"
-                      desc="Expected goals this team would score against an average
+                        note="Higher is better"
+                      />
+                    </TooltipContent>
+                  </Tooltip>
+                </TableHead>
+                <TableHead className="w-12 min-w-12 text-center text-gray-900">
+                  <Tooltip>
+                    <TooltipTrigger>OFF</TooltipTrigger>
+                    <TooltipContent>
+                      <StatExplainer
+                        abbrev="OFF"
+                        full="Offensive Rating"
+                        desc="Expected goals this team would score against an average
                       Premier League opponent on a neutral pitch."
-                      note="Higher is better"
-                    />
-                  </TooltipContent>
-                </Tooltip>
-              </TableHead>
-              <TableHead className="w-12 min-w-12 text-center text-gray-900">
-                <Tooltip>
-                  <TooltipTrigger>DEF</TooltipTrigger>
-                  <TooltipContent>
-                    <StatExplainer
-                      abbrev="DEF"
-                      full="Defensive Rating"
-                      desc="Expected goals this team would concede to an average
+                        note="Higher is better"
+                      />
+                    </TooltipContent>
+                  </Tooltip>
+                </TableHead>
+                <TableHead className="w-12 min-w-12 text-center text-gray-900">
+                  <Tooltip>
+                    <TooltipTrigger>DEF</TooltipTrigger>
+                    <TooltipContent>
+                      <StatExplainer
+                        abbrev="DEF"
+                        full="Defensive Rating"
+                        desc="Expected goals this team would concede to an average
                       Premier League opponent on a neutral pitch."
-                      note="Lower is better"
-                    />
-                  </TooltipContent>
-                </Tooltip>
-              </TableHead>
-              <TableHead className="text-center text-gray-900">
-                <Tooltip>
-                  <TooltipTrigger>WIN</TooltipTrigger>
-                  <TooltipContent>
-                    <StatExplainer
-                      abbrev="WIN"
-                      full="Projected probability of winning title"
-                      desc="After running 10,000 simulations"
-                    />
-                  </TooltipContent>
-                </Tooltip>
-              </TableHead>
-              <TableHead className="text-center text-gray-900">
-                <Tooltip>
-                  <TooltipTrigger>T4</TooltipTrigger>
-                  <TooltipContent>
-                    <StatExplainer
-                      abbrev="T4"
-                      full="Projected probability of finishing top 4"
-                      desc="After running 10,000 simulations"
-                    />
-                  </TooltipContent>
-                </Tooltip>
-              </TableHead>
-              <TableHead className="text-center text-gray-900">
-                <Tooltip>
-                  <TooltipTrigger>REL</TooltipTrigger>
-                  <TooltipContent>
-                    <StatExplainer
-                      abbrev="REL"
-                      full="Projected probability of relegation"
-                      desc="After running 10,000 simulations"
-                    />
-                  </TooltipContent>
-                </Tooltip>
-              </TableHead>
-              <TableHead className="relative text-center text-gray-900 before:absolute before:left-2 before:top-1/2 before:-translate-y-1/2 before:text-[10px] before:font-normal before:text-gray-500 before:content-['1'] after:absolute after:right-2 after:top-1/2 after:-translate-y-1/2 after:text-[10px] after:font-normal after:text-gray-500 after:content-['20']">
-                <Tooltip>
-                  <TooltipTrigger>POS</TooltipTrigger>
-                  <TooltipContent>
-                    <StatExplainer
-                      abbrev="POS"
-                      full="Projected end-of-season positions"
-                      desc="After running 10,000 simulations"
-                    />
-                  </TooltipContent>
-                </Tooltip>
-              </TableHead>
-              <TableHead className="w-10 min-w-10 text-center">
-                <Tooltip>
-                  <TooltipTrigger>MP</TooltipTrigger>
-                  <TooltipContent>Matches Played</TooltipContent>
-                </Tooltip>
-              </TableHead>
-              <TableHead className="w-10 min-w-10 text-center">
-                <Tooltip>
-                  <TooltipTrigger>W</TooltipTrigger>
-                  <TooltipContent>Wins</TooltipContent>
-                </Tooltip>
-              </TableHead>
-              <TableHead className="w-10 min-w-10 text-center">
-                <Tooltip>
-                  <TooltipTrigger>D</TooltipTrigger>
-                  <TooltipContent>Draws</TooltipContent>
-                </Tooltip>
-              </TableHead>
-              <TableHead className="w-10 min-w-10 text-center">
-                <Tooltip>
-                  <TooltipTrigger>L</TooltipTrigger>
-                  <TooltipContent>Losses</TooltipContent>
-                </Tooltip>
-              </TableHead>
-              <TableHead className="w-10 min-w-10 text-center">
-                <Tooltip>
-                  <TooltipTrigger>GF</TooltipTrigger>
-                  <TooltipContent>Goals For</TooltipContent>
-                </Tooltip>
-              </TableHead>
-              <TableHead className="w-10 min-w-10 text-center">
-                <Tooltip>
-                  <TooltipTrigger>GA</TooltipTrigger>
-                  <TooltipContent>Goals Against</TooltipContent>
-                </Tooltip>
-              </TableHead>
-              <TableHead className="w-10 min-w-10 text-center">
-                <Tooltip>
-                  <TooltipTrigger>GD</TooltipTrigger>
-                  <TooltipContent>Goal Difference</TooltipContent>
-                </Tooltip>
-              </TableHead>
-              <TableHead className="w-10 min-w-10 text-center">
-                <Tooltip>
-                  <TooltipTrigger>PTS</TooltipTrigger>
-                  <TooltipContent>Points</TooltipContent>
-                </Tooltip>
-              </TableHead>
-              <TableHead>
-                <Tooltip>
-                  <TooltipTrigger>FORM</TooltipTrigger>
-                  <TooltipContent>Last 5 match results</TooltipContent>
-                </Tooltip>
-              </TableHead>
-            </TableRow>
-          </TableHeader>
-          <TableBody className="border-b text-base text-gray-500">
-            {rows.map((r, i) => (
-              <Row key={i} row={r} />
-            ))}
-          </TableBody>
-        </Table>
-      </TooltipProvider>
-    </div>
+                        note="Lower is better"
+                      />
+                    </TooltipContent>
+                  </Tooltip>
+                </TableHead>
+                <TableHead className="text-center text-gray-900">
+                  <Tooltip>
+                    <TooltipTrigger>WIN</TooltipTrigger>
+                    <TooltipContent>
+                      <StatExplainer
+                        abbrev="WIN"
+                        full="Probability of winning title"
+                        desc="After running 10,000 simulations"
+                      />
+                    </TooltipContent>
+                  </Tooltip>
+                </TableHead>
+                <TableHead className="text-center text-gray-900">
+                  <Tooltip>
+                    <TooltipTrigger>T4</TooltipTrigger>
+                    <TooltipContent>
+                      <StatExplainer
+                        abbrev="T4"
+                        full="Probability of finishing top 4"
+                        desc="After running 10,000 simulations"
+                      />
+                    </TooltipContent>
+                  </Tooltip>
+                </TableHead>
+                <TableHead className="text-center text-gray-900">
+                  <Tooltip>
+                    <TooltipTrigger>REL</TooltipTrigger>
+                    <TooltipContent>
+                      <StatExplainer
+                        abbrev="REL"
+                        full="Probability of relegation"
+                        desc="After running 10,000 simulations"
+                      />
+                    </TooltipContent>
+                  </Tooltip>
+                </TableHead>
+                <TableHead className="relative text-center text-gray-900 before:absolute before:left-2 before:top-1/2 before:-translate-y-1/2 before:text-[10px] before:font-normal before:text-gray-500 before:content-['1'] after:absolute after:right-2 after:top-1/2 after:-translate-y-1/2 after:text-[10px] after:font-normal after:text-gray-500 after:content-['20']">
+                  <Tooltip>
+                    <TooltipTrigger>POS</TooltipTrigger>
+                    <TooltipContent>
+                      <StatExplainer
+                        abbrev="POS"
+                        full="Projected end-of-season positions"
+                        desc="After running 10,000 simulations"
+                      />
+                    </TooltipContent>
+                  </Tooltip>
+                </TableHead>
+                <TableHead className="text-center text-gray-900">
+                  <Tooltip>
+                    <TooltipTrigger>APTS</TooltipTrigger>
+                    <TooltipContent>
+                      <StatExplainer
+                        abbrev="APTS"
+                        full="Average end-of-season points"
+                        desc="After running 10,000 simulations"
+                      />
+                    </TooltipContent>
+                  </Tooltip>
+                </TableHead>
+                <TableHead className="text-center text-gray-900">
+                  <Tooltip>
+                    <TooltipTrigger>AGD</TooltipTrigger>
+                    <TooltipContent>
+                      <StatExplainer
+                        abbrev="AGD"
+                        full="Average end-of-season goal difference"
+                        desc="After running 10,000 simulations"
+                      />
+                    </TooltipContent>
+                  </Tooltip>
+                </TableHead>
+                <TableHead className="w-10 min-w-10 text-center">
+                  <Tooltip>
+                    <TooltipTrigger>MP</TooltipTrigger>
+                    <TooltipContent>Matches Played</TooltipContent>
+                  </Tooltip>
+                </TableHead>
+                {showDetails && (
+                  <>
+                    <TableHead className="w-10 min-w-10 text-center">
+                      <Tooltip>
+                        <TooltipTrigger>W</TooltipTrigger>
+                        <TooltipContent>Wins</TooltipContent>
+                      </Tooltip>
+                    </TableHead>
+                    <TableHead className="w-10 min-w-10 text-center">
+                      <Tooltip>
+                        <TooltipTrigger>D</TooltipTrigger>
+                        <TooltipContent>Draws</TooltipContent>
+                      </Tooltip>
+                    </TableHead>
+                    <TableHead className="w-10 min-w-10 text-center">
+                      <Tooltip>
+                        <TooltipTrigger>L</TooltipTrigger>
+                        <TooltipContent>Losses</TooltipContent>
+                      </Tooltip>
+                    </TableHead>
+                    <TableHead className="w-10 min-w-10 text-center">
+                      <Tooltip>
+                        <TooltipTrigger>GF</TooltipTrigger>
+                        <TooltipContent>Goals For</TooltipContent>
+                      </Tooltip>
+                    </TableHead>
+                    <TableHead className="w-10 min-w-10 text-center">
+                      <Tooltip>
+                        <TooltipTrigger>GA</TooltipTrigger>
+                        <TooltipContent>Goals Against</TooltipContent>
+                      </Tooltip>
+                    </TableHead>
+                    <TableHead className="w-10 min-w-10 text-center">
+                      <Tooltip>
+                        <TooltipTrigger>GD</TooltipTrigger>
+                        <TooltipContent>Goal Difference</TooltipContent>
+                      </Tooltip>
+                    </TableHead>
+                  </>
+                )}
+                <TableHead className="w-10 min-w-10 text-center">
+                  <Tooltip>
+                    <TooltipTrigger>PTS</TooltipTrigger>
+                    <TooltipContent>Points</TooltipContent>
+                  </Tooltip>
+                </TableHead>
+                <TableHead>
+                  <Tooltip>
+                    <TooltipTrigger>FORM</TooltipTrigger>
+                    <TooltipContent align="start" alignOffset={-12}>
+                      Last 5 match results
+                    </TooltipContent>
+                  </Tooltip>
+                </TableHead>
+              </TableRow>
+            </TableHeader>
+            <TableBody className="border-b text-base text-gray-500">
+              {rows.map((r, i) => (
+                <Row key={i} row={r} showDetails={showDetails} />
+              ))}
+            </TableBody>
+          </Table>
+        </TooltipProvider>
+      )}
+    </>
   );
 }
 
@@ -218,7 +254,7 @@ function StatExplainer({
   );
 }
 
-function Row({ row }: { row: Row }) {
+function Row({ row, showDetails }: { row: Row; showDetails: boolean }) {
   const formLatestIndex = row.form.filter((r) => r !== null).length - 1;
   const prob_champion = row.prob_positions[0];
   const prob_top_4 =
@@ -237,7 +273,7 @@ function Row({ row }: { row: Row }) {
           <ChangeIndicator change={row.change} />
         </div>
       </TableCell>
-      <TableCell className="min-w-44 font-semibold text-gray-900">
+      <TableCell className="min-w-44 max-w-96 font-semibold text-gray-900">
         <div className="flex flex-row items-center gap-2.5">
           <Image
             alt={row.name + " logo"}
@@ -255,40 +291,64 @@ function Row({ row }: { row: Row }) {
         </div>
       </TableCell>
       <TableCell className="w-16 min-w-16 text-center text-base font-medium text-gray-900">
-        {row.efi}
+        {row.efi.toFixed(1)}
       </TableCell>
       <TableCell className="w-12 min-w-12 text-center text-sm font-medium text-gray-900">
-        {row.off}
+        {row.off.toFixed(1)}
       </TableCell>
       <TableCell className="w-12 min-w-12 text-center text-sm font-medium text-gray-900">
-        {row.def}
+        {row.def.toFixed(1)}
       </TableCell>
       <TableCell className="w-12 min-w-12 text-center text-sm font-medium">
-        {prob_champion > 0
-          ? prob_champion < 0.005
-            ? "<1%"
-            : prob_champion > 0.99
-              ? ">99%"
-              : (prob_champion * 100).toFixed() + "%"
-          : "—"}
+        {prob_champion >= 1 ? (
+          <div className="flex h-full w-full items-center justify-center">
+            <IconCheck className="size-5" />
+          </div>
+        ) : prob_champion > 0 ? (
+          prob_champion < 0.01 ? (
+            "<1%"
+          ) : prob_champion > 0.99 ? (
+            ">99%"
+          ) : (
+            (prob_champion * 100).toFixed() + "%"
+          )
+        ) : (
+          "—"
+        )}
       </TableCell>
       <TableCell className="w-12 min-w-12 text-center text-sm font-medium">
-        {prob_top_4 > 0
-          ? prob_top_4 < 0.005
-            ? "<1%"
-            : prob_top_4 > 0.99
-              ? ">99%"
-              : (prob_top_4 * 100).toFixed() + "%"
-          : "—"}
+        {prob_top_4 >= 1 ? (
+          <div className="flex h-full w-full items-center justify-center">
+            <IconCheck className="size-5" />
+          </div>
+        ) : prob_top_4 > 0 ? (
+          prob_top_4 < 0.01 ? (
+            "<1%"
+          ) : prob_top_4 > 0.99 ? (
+            ">99%"
+          ) : (
+            (prob_top_4 * 100).toFixed() + "%"
+          )
+        ) : (
+          "—"
+        )}
       </TableCell>
       <TableCell className="w-12 min-w-12 text-center text-sm font-medium">
-        {prob_rel > 0
-          ? prob_rel < 0.005
-            ? "<1%"
-            : prob_rel > 0.99
-              ? ">99%"
-              : (prob_rel * 100).toFixed() + "%"
-          : "—"}
+        {prob_rel >= 1 ? (
+          <div className="flex h-full w-full items-center justify-center">
+            <IconCheck className="size-5" />
+          </div>
+        ) : prob_rel > 0 ? (
+          prob_rel < 0.01 ? (
+            "<1%"
+          ) : prob_rel > 0.99 ? (
+            ">99%"
+          ) : (
+            (prob_rel * 100).toFixed() + "%"
+          )
+        ) : (
+          "—"
+        )}
       </TableCell>
       <TableCell className="w-20 min-w-20">
         <Positions
@@ -297,27 +357,37 @@ function Row({ row }: { row: Row }) {
           probs={row.prob_positions}
         />
       </TableCell>
+      <TableCell className="w-12 min-w-12 text-center text-sm font-medium">
+        {row.avg_pts.toFixed()}
+      </TableCell>
+      <TableCell className="w-12 min-w-12 text-center text-sm font-medium">
+        {(row.avg_gd > 0 ? "+" : "") + row.avg_gd.toFixed()}
+      </TableCell>
       <TableCell className="w-10 min-w-10 text-center text-sm font-medium">
         {row.mp}
       </TableCell>
-      <TableCell className="w-10 min-w-10 text-center text-sm font-medium">
-        {row.w}
-      </TableCell>
-      <TableCell className="w-10 min-w-10 text-center text-sm font-medium">
-        {row.d}
-      </TableCell>
-      <TableCell className="w-10 min-w-10 text-center text-sm font-medium">
-        {row.l}
-      </TableCell>
-      <TableCell className="w-10 min-w-10 text-center text-sm font-medium">
-        {row.gf}
-      </TableCell>
-      <TableCell className="w-10 min-w-10 text-center text-sm font-medium">
-        {row.ga}
-      </TableCell>
-      <TableCell className="w-10 min-w-10 text-center text-sm font-medium">
-        {(row.gd > 0 ? "+" : "") + row.gd.toFixed()}
-      </TableCell>
+      {showDetails && (
+        <>
+          <TableCell className="w-10 min-w-10 text-center text-sm font-medium">
+            {row.w}
+          </TableCell>
+          <TableCell className="w-10 min-w-10 text-center text-sm font-medium">
+            {row.d}
+          </TableCell>
+          <TableCell className="w-10 min-w-10 text-center text-sm font-medium">
+            {row.l}
+          </TableCell>
+          <TableCell className="w-10 min-w-10 text-center text-sm font-medium">
+            {row.gf}
+          </TableCell>
+          <TableCell className="w-10 min-w-10 text-center text-sm font-medium">
+            {row.ga}
+          </TableCell>
+          <TableCell className="w-10 min-w-10 text-center text-sm font-medium">
+            {(row.gd > 0 ? "+" : "") + row.gd.toFixed()}
+          </TableCell>
+        </>
+      )}
       <TableCell className="w-10 min-w-10 text-center text-sm font-medium">
         {row.pts}
       </TableCell>
@@ -351,7 +421,7 @@ function Positions({
                 <div className="group h-6 w-1 px-[1px]">
                   <div
                     style={{
-                      backgroundColor: `rgba(17, 24, 39, ${3 * p + 0.1})`,
+                      backgroundColor: `rgba(17, 24, 39, ${4 * p + 0.1})`,
                     }}
                     className="h-full w-full rounded-sm group-hover:!bg-teal-500"
                   ></div>

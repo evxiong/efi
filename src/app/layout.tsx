@@ -20,7 +20,7 @@ export default function RootLayout({
 }>) {
   return (
     <html lang="en" className={`${ibmPlexSans.variable} antialiased`}>
-      <body className="min-h-screen scroll-smooth font-sans text-gray-900">
+      <body className="min-h-screen w-screen overflow-x-hidden scroll-smooth font-sans text-gray-900">
         {children}
       </body>
     </html>
