@@ -1,3 +1,5 @@
+import { ReactNode } from "react";
+
 export interface Row {
   update_date: string;
   rank: number;
@@ -22,7 +24,11 @@ export interface Row {
     string | null,
     string | null,
   ];
+  // prob_positions: string[]; // string representation of decimal probabilities
   prob_positions: number[];
+  prob_champion: number;
+  prob_top_4: number;
+  prob_rel: number;
   avg_pts: number;
   avg_gd: number;
 }

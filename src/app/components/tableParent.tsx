@@ -1,7 +1,7 @@
 "use client";
 
-import { useState } from "react";
-import TableTab from "./table";
+import { useEffect, useState } from "react";
+import RankingsTable from "./table";
 import { Checkbox } from "@/components/ui/checkbox";
 import {
   Select,
@@ -23,7 +23,7 @@ export default function TableTabParent({
     i == 0 ? "Preseason" : "Matchweek " + i.toFixed(),
   );
   const seasons = [...data.keys()];
-  const seasonOptions = seasons.map((d) => `${d}/${d + 1}`);
+  const seasonOptions = seasons.map((d) => `${d}/${(d + 1) % 100}`);
   const [matchweek, setMatchweek] = useState(
     data.get(seasons.at(-1)!)!.size - 1,
   );
@@ -31,7 +31,35 @@ export default function TableTabParent({
   const [showDetails, setShowDetails] = useState<boolean | "indeterminate">(
     false,
   );
+  const [rows, setRows] = useState(data.get(season)?.get(matchweek));
+  const [selectedSortKey, setSelectedSortKey] = useState<keyof Row>("efi");
+  const [sortDesc, setSortDesc] = useState(true);
+
   const dateString = data.get(season)?.get(matchweek)?.at(0)?.update_date;
+
+  useEffect(() => {
+    setRows(data.get(season)?.get(matchweek));
+  }, [matchweek, season]);
+
+  useEffect(() => {
+    setRows(
+      data.get(season)?.get(matchweek)
+        ? [...data.get(season)!.get(matchweek)!].sort((a, b) =>
+            sortDesc
+              ? (b[selectedSortKey] as number) - (a[selectedSortKey] as number)
+              : (a[selectedSortKey] as number) - (b[selectedSortKey] as number),
+          )
+        : undefined,
+    );
+  }, [selectedSortKey, sortDesc, matchweek, season]);
+
+  function setSortState(sortKey: keyof Row, sortDesc: boolean) {
+    if (sortKey !== selectedSortKey) {
+      setSelectedSortKey(sortKey);
+    }
+    setSortDesc(sortDesc);
+  }
+
   return (
     <div className="mb-40 flex flex-col gap-4">
       <div className="flex flex-col gap-6">
@@ -83,6 +111,7 @@ export default function TableTabParent({
                   Rankings as of{" "}
                   {new Date(dateString)
                     .toLocaleDateString([], {
+                      timeZone: "UTC",
                       month: "short",
                       day: "numeric",
                       year: "numeric",
@@ -113,9 +142,12 @@ export default function TableTabParent({
           </div>
         </div>
       </div>
-      <TableTab
-        rows={data.get(season)?.get(matchweek)}
+      <RankingsTable
+        rows={rows}
         showDetails={showDetails === true}
+        selectedSortKey={selectedSortKey}
+        sortDesc={sortDesc}
+        setSortState={setSortState}
       />
     </div>
   );

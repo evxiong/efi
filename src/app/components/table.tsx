@@ -11,6 +11,8 @@ import {
   IconCaretDownFilled,
   IconCaretUpFilled,
   IconCheck,
+  IconChevronDown,
+  IconChevronUp,
   IconEqual,
 } from "@tabler/icons-react";
 import { Row } from "../data/tableData";
@@ -27,13 +29,21 @@ import {
 } from "@/components/ui/popover";
 import PositionChart from "./positionChart";
 import { numberToOrdinal } from "../lib/utils";
+import { Button } from "@/components/ui/button";
+import { Dispatch, SetStateAction } from "react";
 
-export default function TableTab({
+export default function RankingsTable({
   rows,
   showDetails,
+  selectedSortKey,
+  sortDesc,
+  setSortState,
 }: {
   rows: Row[] | undefined;
   showDetails: boolean;
+  selectedSortKey: keyof Row;
+  sortDesc: boolean;
+  setSortState: (a: keyof Row, b: boolean) => void;
 }) {
   return (
     <>
@@ -43,86 +53,76 @@ export default function TableTab({
             <TableHeader>
               <TableRow className="text-xs text-gray-500 hover:bg-transparent">
                 <TableHead className="w-20 min-w-20">RK</TableHead>
-                <TableHead className="min-w-44">CLUB</TableHead>
-                <TableHead className="w-16 min-w-16 text-center text-gray-900">
-                  <Tooltip>
-                    <TooltipTrigger>PLFI</TooltipTrigger>
-                    <TooltipContent>
-                      <StatExplainer
-                        abbrev="PLFI"
-                        full="Premier League Football Index"
-                        desc="Expected percent of possible points this team would
-                        gain against an average Premier League opponent on a
+                <TableHead className="sticky left-0 z-10 min-w-44 bg-white">
+                  CLUB
+                </TableHead>
+                <THSortableLargeTooltip
+                  width="lg"
+                  name="PLFI"
+                  full="Premier League Football Index"
+                  sortKey="efi"
+                  desc="Expected percent of possible points this team would
+                        take against an average Premier League opponent on a
                         neutral pitch."
-                        note="Higher is better"
-                      />
-                    </TooltipContent>
-                  </Tooltip>
-                </TableHead>
-                <TableHead className="w-12 min-w-12 text-center text-gray-900">
-                  <Tooltip>
-                    <TooltipTrigger>OFF</TooltipTrigger>
-                    <TooltipContent>
-                      <StatExplainer
-                        abbrev="OFF"
-                        full="Offensive Rating"
-                        desc="Expected goals this team would score against an average
-                      Premier League opponent on a neutral pitch."
-                        note="Higher is better"
-                      />
-                    </TooltipContent>
-                  </Tooltip>
-                </TableHead>
-                <TableHead className="w-12 min-w-12 text-center text-gray-900">
-                  <Tooltip>
-                    <TooltipTrigger>DEF</TooltipTrigger>
-                    <TooltipContent>
-                      <StatExplainer
-                        abbrev="DEF"
-                        full="Defensive Rating"
-                        desc="Expected goals this team would concede to an average
-                      Premier League opponent on a neutral pitch."
-                        note="Lower is better"
-                      />
-                    </TooltipContent>
-                  </Tooltip>
-                </TableHead>
-                <TableHead className="text-center text-gray-900">
-                  <Tooltip>
-                    <TooltipTrigger>WIN</TooltipTrigger>
-                    <TooltipContent>
-                      <StatExplainer
-                        abbrev="WIN"
-                        full="Probability of winning title"
-                        desc="After running 10,000 simulations"
-                      />
-                    </TooltipContent>
-                  </Tooltip>
-                </TableHead>
-                <TableHead className="text-center text-gray-900">
-                  <Tooltip>
-                    <TooltipTrigger>T4</TooltipTrigger>
-                    <TooltipContent>
-                      <StatExplainer
-                        abbrev="T4"
-                        full="Probability of finishing top 4"
-                        desc="After running 10,000 simulations"
-                      />
-                    </TooltipContent>
-                  </Tooltip>
-                </TableHead>
-                <TableHead className="text-center text-gray-900">
-                  <Tooltip>
-                    <TooltipTrigger>REL</TooltipTrigger>
-                    <TooltipContent>
-                      <StatExplainer
-                        abbrev="REL"
-                        full="Probability of relegation"
-                        desc="After running 10,000 simulations"
-                      />
-                    </TooltipContent>
-                  </Tooltip>
-                </TableHead>
+                  note="Higher is better"
+                  sortDesc={sortDesc}
+                  selectedSortKey={selectedSortKey}
+                  setSortState={setSortState}
+                />
+                <THSortableLargeTooltip
+                  width="sm"
+                  name="OFF"
+                  full="Offensive Rating"
+                  sortKey="off"
+                  desc="Expected goals this team would score against an average
+                        Premier League opponent on a neutral pitch."
+                  note="Higher is better"
+                  sortDesc={sortDesc}
+                  selectedSortKey={selectedSortKey}
+                  setSortState={setSortState}
+                />
+                <THSortableLargeTooltip
+                  width="sm"
+                  name="DEF"
+                  full="Defensive Rating"
+                  sortKey="def"
+                  desc="Expected goals this team would concede to an average
+                        Premier League opponent on a neutral pitch."
+                  note="Lower is better"
+                  sortDesc={sortDesc}
+                  selectedSortKey={selectedSortKey}
+                  setSortState={setSortState}
+                />
+                <THSortableLargeTooltip
+                  width="md"
+                  name="WIN"
+                  full="Probability of winning title"
+                  sortKey="prob_champion"
+                  desc="After running 10,000 simulations"
+                  sortDesc={sortDesc}
+                  selectedSortKey={selectedSortKey}
+                  setSortState={setSortState}
+                />
+                <THSortableLargeTooltip
+                  width="md"
+                  name="T4"
+                  full="Probability of finishing top 4"
+                  sortKey="prob_top_4"
+                  desc="After running 10,000 simulations"
+                  sortDesc={sortDesc}
+                  selectedSortKey={selectedSortKey}
+                  setSortState={setSortState}
+                />
+                <THSortableLargeTooltip
+                  width="md"
+                  name="REL"
+                  full="Probability of relegation"
+                  sortKey="prob_rel"
+                  desc="After running 10,000 simulations"
+                  sortDesc={sortDesc}
+                  selectedSortKey={selectedSortKey}
+                  setSortState={setSortState}
+                />
                 <TableHead className="relative text-center text-gray-900 before:absolute before:left-2 before:top-1/2 before:-translate-y-1/2 before:text-[10px] before:font-normal before:text-gray-500 before:content-['1'] after:absolute after:right-2 after:top-1/2 after:-translate-y-1/2 after:text-[10px] after:font-normal after:text-gray-500 after:content-['20']">
                   <Tooltip>
                     <TooltipTrigger>POS</TooltipTrigger>
@@ -135,82 +135,94 @@ export default function TableTab({
                     </TooltipContent>
                   </Tooltip>
                 </TableHead>
-                <TableHead className="text-center text-gray-900">
-                  <Tooltip>
-                    <TooltipTrigger>APTS</TooltipTrigger>
-                    <TooltipContent>
-                      <StatExplainer
-                        abbrev="APTS"
-                        full="Average end-of-season points"
-                        desc="After running 10,000 simulations"
-                      />
-                    </TooltipContent>
-                  </Tooltip>
-                </TableHead>
-                <TableHead className="text-center text-gray-900">
-                  <Tooltip>
-                    <TooltipTrigger>AGD</TooltipTrigger>
-                    <TooltipContent>
-                      <StatExplainer
-                        abbrev="AGD"
-                        full="Average end-of-season goal difference"
-                        desc="After running 10,000 simulations"
-                      />
-                    </TooltipContent>
-                  </Tooltip>
-                </TableHead>
-                <TableHead className="w-10 min-w-10 text-center">
-                  <Tooltip>
-                    <TooltipTrigger>MP</TooltipTrigger>
-                    <TooltipContent>Matches Played</TooltipContent>
-                  </Tooltip>
-                </TableHead>
+                <THSortableLargeTooltip
+                  width="sm"
+                  name="APTS"
+                  full="Average end-of-season points"
+                  sortKey="avg_pts"
+                  desc="After running 10,000 simulations"
+                  sortDesc={sortDesc}
+                  selectedSortKey={selectedSortKey}
+                  setSortState={setSortState}
+                />
+                <THSortableLargeTooltip
+                  width="sm"
+                  name="AGD"
+                  full="Average end-of-season goal difference"
+                  sortKey="avg_gd"
+                  desc="After running 10,000 simulations"
+                  sortDesc={sortDesc}
+                  selectedSortKey={selectedSortKey}
+                  setSortState={setSortState}
+                />
+                <THSortableSmallTooltip
+                  name="MP"
+                  full="Matches Played"
+                  sortKey="mp"
+                  sortDesc={sortDesc}
+                  selectedSortKey={selectedSortKey}
+                  setSortState={setSortState}
+                />
                 {showDetails && (
                   <>
-                    <TableHead className="w-10 min-w-10 text-center">
-                      <Tooltip>
-                        <TooltipTrigger>W</TooltipTrigger>
-                        <TooltipContent>Wins</TooltipContent>
-                      </Tooltip>
-                    </TableHead>
-                    <TableHead className="w-10 min-w-10 text-center">
-                      <Tooltip>
-                        <TooltipTrigger>D</TooltipTrigger>
-                        <TooltipContent>Draws</TooltipContent>
-                      </Tooltip>
-                    </TableHead>
-                    <TableHead className="w-10 min-w-10 text-center">
-                      <Tooltip>
-                        <TooltipTrigger>L</TooltipTrigger>
-                        <TooltipContent>Losses</TooltipContent>
-                      </Tooltip>
-                    </TableHead>
-                    <TableHead className="w-10 min-w-10 text-center">
-                      <Tooltip>
-                        <TooltipTrigger>GF</TooltipTrigger>
-                        <TooltipContent>Goals For</TooltipContent>
-                      </Tooltip>
-                    </TableHead>
-                    <TableHead className="w-10 min-w-10 text-center">
-                      <Tooltip>
-                        <TooltipTrigger>GA</TooltipTrigger>
-                        <TooltipContent>Goals Against</TooltipContent>
-                      </Tooltip>
-                    </TableHead>
-                    <TableHead className="w-10 min-w-10 text-center">
-                      <Tooltip>
-                        <TooltipTrigger>GD</TooltipTrigger>
-                        <TooltipContent>Goal Difference</TooltipContent>
-                      </Tooltip>
-                    </TableHead>
+                    <THSortableSmallTooltip
+                      name="W"
+                      full="Wins"
+                      sortKey="w"
+                      sortDesc={sortDesc}
+                      selectedSortKey={selectedSortKey}
+                      setSortState={setSortState}
+                    />
+                    <THSortableSmallTooltip
+                      name="D"
+                      full="Draws"
+                      sortKey="d"
+                      sortDesc={sortDesc}
+                      selectedSortKey={selectedSortKey}
+                      setSortState={setSortState}
+                    />
+                    <THSortableSmallTooltip
+                      name="L"
+                      full="Losses"
+                      sortKey="l"
+                      sortDesc={sortDesc}
+                      selectedSortKey={selectedSortKey}
+                      setSortState={setSortState}
+                    />
+                    <THSortableSmallTooltip
+                      name="GF"
+                      full="Goals For"
+                      sortKey="gf"
+                      sortDesc={sortDesc}
+                      selectedSortKey={selectedSortKey}
+                      setSortState={setSortState}
+                    />
+                    <THSortableSmallTooltip
+                      name="GA"
+                      full="Goals Against"
+                      sortKey="ga"
+                      sortDesc={sortDesc}
+                      selectedSortKey={selectedSortKey}
+                      setSortState={setSortState}
+                    />
+                    <THSortableSmallTooltip
+                      name="GD"
+                      full="Goal Difference"
+                      sortKey="gd"
+                      sortDesc={sortDesc}
+                      selectedSortKey={selectedSortKey}
+                      setSortState={setSortState}
+                    />
                   </>
                 )}
-                <TableHead className="w-10 min-w-10 text-center">
-                  <Tooltip>
-                    <TooltipTrigger>PTS</TooltipTrigger>
-                    <TooltipContent>Points</TooltipContent>
-                  </Tooltip>
-                </TableHead>
+                <THSortableSmallTooltip
+                  name="PTS"
+                  full="Points"
+                  sortKey="pts"
+                  sortDesc={sortDesc}
+                  selectedSortKey={selectedSortKey}
+                  setSortState={setSortState}
+                />
                 <TableHead>
                   <Tooltip>
                     <TooltipTrigger>FORM</TooltipTrigger>
@@ -230,6 +242,110 @@ export default function TableTab({
         </TooltipProvider>
       )}
     </>
+  );
+}
+
+function THSortableLargeTooltip({
+  width,
+  name,
+  full,
+  sortKey,
+  desc = "",
+  note = "",
+  selectedSortKey,
+  sortDesc,
+  setSortState,
+}: {
+  width: "lg" | "md" | "sm";
+  name: string;
+  full: string;
+  sortKey: keyof Row;
+  desc?: string;
+  note?: string;
+  selectedSortKey: keyof Row;
+  sortDesc: boolean;
+  setSortState: (a: keyof Row, b: boolean) => void;
+}) {
+  return (
+    <TableHead
+      className={`${width === "lg" ? "w-16 min-w-16" : width === "md" ? "w-14 min-w-14" : width === "sm" ? "w-12 min-w-12" : ""} text-gray-900`}
+    >
+      <div className="flex w-full flex-row items-center justify-center">
+        <Tooltip>
+          <TooltipTrigger asChild>
+            <Button
+              variant="ghost"
+              className="-mx-1.5 flex h-fit flex-row items-center gap-0.5 px-1.5 py-1 text-xs"
+              onClick={() => {
+                if (sortKey === selectedSortKey) {
+                  setSortState(sortKey, !sortDesc);
+                } else {
+                  setSortState(sortKey, true);
+                }
+              }}
+            >
+              <span>{name}</span>
+              {sortKey === selectedSortKey &&
+                (sortDesc ? (
+                  <IconChevronDown className="!size-3.5 stroke-teal-500" />
+                ) : (
+                  <IconChevronUp className="!size-3.5 stroke-teal-500" />
+                ))}
+            </Button>
+          </TooltipTrigger>
+          <TooltipContent>
+            <StatExplainer abbrev={name} full={full} desc={desc} note={note} />
+          </TooltipContent>
+        </Tooltip>
+      </div>
+    </TableHead>
+  );
+}
+
+function THSortableSmallTooltip({
+  name,
+  full,
+  sortKey,
+  selectedSortKey,
+  sortDesc,
+  setSortState,
+}: {
+  name: string;
+  full: string;
+  sortKey: keyof Row;
+  selectedSortKey: keyof Row;
+  sortDesc: boolean;
+  setSortState: (a: keyof Row, b: boolean) => void;
+}) {
+  return (
+    <TableHead className="w-10 min-w-10">
+      <div className="flex w-full flex-row items-center justify-center">
+        <Tooltip>
+          <TooltipTrigger asChild>
+            <Button
+              variant="ghost"
+              className="-mx-1.5 flex h-fit flex-row items-center gap-0.5 px-1.5 py-1 text-xs"
+              onClick={() => {
+                if (sortKey === selectedSortKey) {
+                  setSortState(sortKey, !sortDesc);
+                } else {
+                  setSortState(sortKey, true);
+                }
+              }}
+            >
+              <span>{name}</span>
+              {sortKey === selectedSortKey &&
+                (sortDesc ? (
+                  <IconChevronDown className="!size-3.5 stroke-teal-500" />
+                ) : (
+                  <IconChevronUp className="!size-3.5 stroke-teal-500" />
+                ))}
+            </Button>
+          </TooltipTrigger>
+          <TooltipContent>{full}</TooltipContent>
+        </Tooltip>
+      </div>
+    </TableHead>
   );
 }
 
@@ -256,38 +372,35 @@ function StatExplainer({
 
 function Row({ row, showDetails }: { row: Row; showDetails: boolean }) {
   const formLatestIndex = row.form.filter((r) => r !== null).length - 1;
-  const prob_champion = row.prob_positions[0];
-  const prob_top_4 =
-    row.prob_positions[0] +
-    row.prob_positions[1] +
-    row.prob_positions[2] +
-    row.prob_positions[3];
-  const prob_rel =
-    row.prob_positions[17] + row.prob_positions[18] + row.prob_positions[19];
 
   return (
-    <TableRow>
+    <TableRow className="group/row">
       <TableCell className="w-20 min-w-20">
         <div className="flex flex-row items-center gap-1.5 text-sm font-medium">
           <span className="w-5">{row.rank}</span>
           <ChangeIndicator change={row.change} />
         </div>
       </TableCell>
-      <TableCell className="min-w-44 max-w-96 font-semibold text-gray-900">
-        <div className="flex flex-row items-center gap-2.5">
-          <Image
-            alt={row.name + " logo"}
-            src={
-              "https://resources.premierleague.com/premierleague/badges/50/" +
-              row.pl_id +
-              ".png"
-            }
-            height={24}
-            width={24}
-            draggable={false}
-            className="flex-shrink-0 select-none"
-          />
-          <span>{row.name}</span>
+      <TableCell className="sticky left-0 z-10 min-w-44 max-w-96 font-semibold text-gray-900">
+        <div className="-mx-2 -my-1 bg-white px-2 py-1 transition-colors group-hover/row:bg-gray-50">
+          <div className="flex flex-row items-center gap-2.5">
+            <div className="relative h-6 w-6">
+              <Image
+                alt={row.name + " logo"}
+                src={
+                  "https://resources.premierleague.com/premierleague/badges/50/" +
+                  row.pl_id +
+                  ".png"
+                }
+                // height={24}
+                // width={24}
+                fill={true}
+                draggable={false}
+                className="top-0 flex-shrink-0 select-none object-contain"
+              />
+            </div>
+            <span>{row.name}</span>
+          </div>
         </div>
       </TableCell>
       <TableCell className="w-16 min-w-16 text-center text-base font-medium text-gray-900">
@@ -299,52 +412,52 @@ function Row({ row, showDetails }: { row: Row; showDetails: boolean }) {
       <TableCell className="w-12 min-w-12 text-center text-sm font-medium text-gray-900">
         {row.def.toFixed(1)}
       </TableCell>
-      <TableCell className="w-12 min-w-12 text-center text-sm font-medium">
-        {prob_champion >= 1 ? (
+      <TableCell className="text-center text-sm font-medium">
+        {row.prob_champion >= 1 ? (
           <div className="flex h-full w-full items-center justify-center">
-            <IconCheck className="size-5" />
+            <IconCheck className="size-5 stroke-gray-900" />
           </div>
-        ) : prob_champion > 0 ? (
-          prob_champion < 0.01 ? (
+        ) : row.prob_champion > 0 ? (
+          row.prob_champion < 0.01 ? (
             "<1%"
-          ) : prob_champion > 0.99 ? (
+          ) : row.prob_champion > 0.99 ? (
             ">99%"
           ) : (
-            (prob_champion * 100).toFixed() + "%"
+            (row.prob_champion * 100).toFixed() + "%"
           )
         ) : (
           "—"
         )}
       </TableCell>
-      <TableCell className="w-12 min-w-12 text-center text-sm font-medium">
-        {prob_top_4 >= 1 ? (
+      <TableCell className="text-center text-sm font-medium">
+        {row.prob_top_4 >= 1 ? (
           <div className="flex h-full w-full items-center justify-center">
-            <IconCheck className="size-5" />
+            <IconCheck className="size-5 stroke-gray-900" />
           </div>
-        ) : prob_top_4 > 0 ? (
-          prob_top_4 < 0.01 ? (
+        ) : row.prob_top_4 > 0 ? (
+          row.prob_top_4 < 0.01 ? (
             "<1%"
-          ) : prob_top_4 > 0.99 ? (
+          ) : row.prob_top_4 > 0.99 ? (
             ">99%"
           ) : (
-            (prob_top_4 * 100).toFixed() + "%"
+            (row.prob_top_4 * 100).toFixed() + "%"
           )
         ) : (
           "—"
         )}
       </TableCell>
-      <TableCell className="w-12 min-w-12 text-center text-sm font-medium">
-        {prob_rel >= 1 ? (
+      <TableCell className="text-center text-sm font-medium">
+        {row.prob_rel >= 1 ? (
           <div className="flex h-full w-full items-center justify-center">
-            <IconCheck className="size-5" />
+            <IconCheck className="size-5 stroke-gray-900" />
           </div>
-        ) : prob_rel > 0 ? (
-          prob_rel < 0.01 ? (
+        ) : row.prob_rel > 0 ? (
+          row.prob_rel < 0.01 ? (
             "<1%"
-          ) : prob_rel > 0.99 ? (
+          ) : row.prob_rel > 0.99 ? (
             ">99%"
           ) : (
-            (prob_rel * 100).toFixed() + "%"
+            (row.prob_rel * 100).toFixed() + "%"
           )
         ) : (
           "—"
@@ -361,7 +474,7 @@ function Row({ row, showDetails }: { row: Row; showDetails: boolean }) {
         {row.avg_pts.toFixed()}
       </TableCell>
       <TableCell className="w-12 min-w-12 text-center text-sm font-medium">
-        {(row.avg_gd > 0 ? "+" : "") + row.avg_gd.toFixed()}
+        {(row.avg_gd > 0 ? "+" : "") + row.avg_gd.toFixed().replace("-0", "0")}
       </TableCell>
       <TableCell className="w-10 min-w-10 text-center text-sm font-medium">
         {row.mp}
@@ -384,7 +497,7 @@ function Row({ row, showDetails }: { row: Row; showDetails: boolean }) {
             {row.ga}
           </TableCell>
           <TableCell className="w-10 min-w-10 text-center text-sm font-medium">
-            {(row.gd > 0 ? "+" : "") + row.gd.toFixed()}
+            {(row.gd > 0 ? "+" : "") + row.gd.toFixed().replace("-0", "0")}
           </TableCell>
         </>
       )}
@@ -418,12 +531,12 @@ function Positions({
           {probs.map((p, i) => (
             <Tooltip key={i}>
               <TooltipTrigger>
-                <div className="group h-6 w-1 px-[1px]">
+                <div className="group/bar h-6 w-1 px-[1px]">
                   <div
                     style={{
                       backgroundColor: `rgba(17, 24, 39, ${4 * p + 0.1})`,
                     }}
-                    className="h-full w-full rounded-sm group-hover:!bg-teal-500"
+                    className="h-full w-full rounded-sm group-hover/bar:!bg-teal-500"
                   ></div>
                 </div>
               </TooltipTrigger>

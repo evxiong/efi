@@ -10,9 +10,26 @@ async function fetchTables() {
   try {
     const db = client.db("efi");
     const tables = db.collection("tables");
-    const cursor = tables.find();
+    const cursor = tables.find().sort({ season: 1, matchweek: 1 });
 
     for await (const doc of cursor) {
+      for (const row of doc.rows) {
+        row.prob_positions = (row.prob_positions as string[]).map((p) =>
+          parseFloat(p),
+        );
+        row.prob_champion = row.prob_positions[0];
+        row.prob_top_4 = +(
+          row.prob_positions[0] +
+          row.prob_positions[1] +
+          row.prob_positions[2] +
+          row.prob_positions[3]
+        ).toFixed(4);
+        row.prob_rel = +(
+          row.prob_positions[17] +
+          row.prob_positions[18] +
+          row.prob_positions[19]
+        ).toFixed(4);
+      }
       data.set(
         doc.season,
         (data.get(doc.season) || new Map()).set(doc.matchweek, doc.rows),
