@@ -1,5 +1,5 @@
 import type { Metadata } from "next";
-import { IBM_Plex_Sans } from "next/font/google";
+import { Doppio_One, IBM_Plex_Sans } from "next/font/google";
 import "./globals.css";
 import Navbar from "./components/navbar";
 
@@ -9,9 +9,16 @@ const ibmPlexSans = IBM_Plex_Sans({
   subsets: ["latin"],
 });
 
+const doppioOne = Doppio_One({
+  weight: ["400"],
+  variable: "--font-doppio-one",
+  subsets: ["latin"],
+});
+
 export const metadata: Metadata = {
   title: "PLFI - Premier League Football Index",
-  description: "Premier League Football Index - created by Evan Xiong",
+  description:
+    "The latest Premier League soccer power rankings, predictions, and season projections.",
 };
 
 export default function RootLayout({
@@ -20,7 +27,10 @@ export default function RootLayout({
   children: React.ReactNode;
 }>) {
   return (
-    <html lang="en" className={`${ibmPlexSans.variable} antialiased`}>
+    <html
+      lang="en"
+      className={`${ibmPlexSans.variable} ${doppioOne.variable} antialiased`}
+    >
       <body className="min-h-screen w-screen overflow-x-hidden scroll-smooth font-sans text-gray-900">
         <Navbar />
         {children}

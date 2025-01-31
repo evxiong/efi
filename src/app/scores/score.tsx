@@ -10,8 +10,6 @@ export default function Score({
 }) {
   const finished =
     score.completed && score.score_1 !== null && score.score_2 !== null;
-  const noPredictions =
-    score.prob_1 === null && score.prob_2 === null && score.prob_d === null;
   const W = finished && score.score_1! > score.score_2!;
   const D = finished && score.score_1 === score.score_2;
   const L = finished && score.score_1! < score.score_2!;

@@ -38,7 +38,7 @@ export default function TableTab() {
   const seasonOptions = seasons.map((d) => `${d}/${(d + 1) % 100}`);
   const [season, setSeason] = useState<number | null>(null);
 
-  const { data, error, isLoading, mutate } = useSWR(
+  const { data, isLoading } = useSWR(
     `/api/table?matchweek=${matchweek}&season=${season}`,
     fetcher,
     {
@@ -57,6 +57,7 @@ export default function TableTab() {
 
   useEffect(() => {
     if (!latest) mutateLatest();
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
   const [showDetails, setShowDetails] = useState<boolean | "indeterminate">(

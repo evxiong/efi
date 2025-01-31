@@ -53,6 +53,7 @@ export default function PositionChart({ probs }: { probs: number[] }) {
           content={
             <ChartTooltipContent
               className="w-fit text-gray-900"
+              // eslint-disable-next-line @typescript-eslint/no-unused-vars
               formatter={(value, name, item, index) => {
                 const v = value as number;
                 return `${numberToOrdinal(item.payload.position)}: ${v > 0 ? v.toFixed(2) + "%" : "—"}`;

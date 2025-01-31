@@ -12,9 +12,29 @@ export default function Navbar() {
       <section className="mb-6 flex w-full flex-col border-b bg-gray-100 py-4">
         <div className="mx-auto flex w-full max-w-7xl flex-col gap-4 px-4 md:flex-row md:items-center md:px-6">
           <div className="flex flex-1 flex-row items-center justify-between">
-            <div>
-              <div className="text-xl font-medium italic leading-6">PLFI</div>
-              <div className="text-sm leading-4 text-gray-500">v1.0</div>
+            <div className="font-doppio flex select-none flex-row items-center gap-2 text-xl leading-6">
+              <svg
+                width="24"
+                height="24"
+                viewBox="0 0 24 24"
+                fill="none"
+                xmlns="http://www.w3.org/2000/svg"
+              >
+                <rect width="24" height="24" className="fill-teal-500" />
+                <path
+                  fillRule="evenodd"
+                  clipRule="evenodd"
+                  d="M7 16C11.9706 16 16 11.9706 16 7H18C18 13.0751 13.0751 18 7 18V16Z"
+                  className="fill-white"
+                />
+                <path
+                  fillRule="evenodd"
+                  clipRule="evenodd"
+                  d="M9 8C8.44772 8 8 8.44772 8 9V24H6V9C6 7.34315 7.34315 6 9 6H24V8H9Z"
+                  className="fill-white"
+                />
+              </svg>
+              <div>PLFI</div>
             </div>
             <div className="flex flex-row items-center gap-4 md:hidden">
               <a
@@ -35,7 +55,7 @@ export default function Navbar() {
               </a>
             </div>
           </div>
-          <div className="flex-1 text-base leading-5 text-gray-500">
+          <div className="hidden flex-1 text-base leading-5 text-gray-500 md:inline-block">
             A simple, fairly accurate power rankings model for the Premier
             League, based on FiveThirtyEight&rsquo;s SPI model&nbsp;&nbsp;
             <span className="hidden md:inline-block">

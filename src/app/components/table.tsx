@@ -479,7 +479,9 @@ function Row({ row, showDetails }: { row: Row; showDetails: boolean }) {
         {row.avg_pts.toFixed()}
       </TableCell>
       <TableCell className="w-12 min-w-12 text-center text-sm font-medium">
-        {(row.avg_gd > 0 ? "+" : "") + row.avg_gd.toFixed().replace("-0", "0")}
+        {(
+          (row.avg_gd > 0 ? "+" : "") + row.avg_gd.toFixed().replace("-0", "0")
+        ).replace("+0", "0")}
       </TableCell>
       <TableCell className="w-10 min-w-10 text-center text-sm font-medium">
         {row.mp}
@@ -502,7 +504,9 @@ function Row({ row, showDetails }: { row: Row; showDetails: boolean }) {
             {row.ga}
           </TableCell>
           <TableCell className="w-10 min-w-10 text-center text-sm font-medium">
-            {(row.gd > 0 ? "+" : "") + row.gd.toFixed().replace("-0", "0")}
+            {(
+              (row.gd > 0 ? "+" : "") + row.gd.toFixed().replace("-0", "0")
+            ).replace("+0", "0")}
           </TableCell>
         </>
       )}

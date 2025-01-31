@@ -23,16 +23,16 @@ import useSWR from "swr";
 
 export default function ScoresTab() {
   const fetcher = (url: string) => fetch(url).then((r) => r.json());
-  const {
-    data: latest,
-    isLoading: latestIsLoading,
-    mutate: mutateLatest,
-  } = useSWR("/api/latest", fetcher, {
-    revalidateOnFocus: false,
-    revalidateOnMount: false,
-    revalidateOnReconnect: false,
-    revalidateIfStale: false,
-  });
+  const { data: latest, mutate: mutateLatest } = useSWR(
+    "/api/latest",
+    fetcher,
+    {
+      revalidateOnFocus: false,
+      revalidateOnMount: false,
+      revalidateOnReconnect: false,
+      revalidateIfStale: false,
+    },
+  );
 
   const matchweeks = [...Array(38)].map(
     (_, i) => "Matchweek " + (i + 1).toFixed(),
@@ -42,7 +42,7 @@ export default function ScoresTab() {
   const seasonOptions = seasons.map((d) => `${d}/${(d + 1) % 100}`);
   const [season, setSeason] = useState<number | null>(null);
 
-  const { data, error, isLoading, mutate } = useSWR(
+  const { data, isLoading } = useSWR(
     `/api/scores?matchweek=${matchweek}&season=${season}`,
     fetcher,
     {
@@ -61,6 +61,7 @@ export default function ScoresTab() {
 
   useEffect(() => {
     if (!latest) mutateLatest();
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
   if (!isLoading && data) {
