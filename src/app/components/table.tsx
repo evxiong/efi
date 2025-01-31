@@ -30,24 +30,26 @@ import {
 import PositionChart from "./positionChart";
 import { numberToOrdinal } from "../lib/utils";
 import { Button } from "@/components/ui/button";
-import { Dispatch, SetStateAction } from "react";
+import { Skeleton } from "@/components/ui/skeleton";
 
 export default function RankingsTable({
   rows,
   showDetails,
+  loading,
   selectedSortKey,
   sortDesc,
   setSortState,
 }: {
-  rows: Row[] | undefined;
+  rows: Row[];
   showDetails: boolean;
+  loading: boolean;
   selectedSortKey: keyof Row;
   sortDesc: boolean;
   setSortState: (a: keyof Row, b: boolean) => void;
 }) {
   return (
     <>
-      {rows && (
+      {(loading || rows.length > 0) && (
         <TooltipProvider delayDuration={0} skipDelayDuration={0}>
           <Table>
             <TableHeader>
@@ -234,9 +236,13 @@ export default function RankingsTable({
               </TableRow>
             </TableHeader>
             <TableBody className="border-b text-base text-gray-500">
-              {rows.map((r, i) => (
-                <Row key={i} row={r} showDetails={showDetails} />
-              ))}
+              {loading
+                ? [...Array(20)].map((_, i) => (
+                    <SkeletonRow key={i} showDetails={showDetails} />
+                  ))
+                : rows.map((r, i) => (
+                    <Row key={i} row={r} showDetails={showDetails} />
+                  ))}
             </TableBody>
           </Table>
         </TooltipProvider>
@@ -270,12 +276,12 @@ function THSortableLargeTooltip({
     <TableHead
       className={`${width === "lg" ? "w-16 min-w-16" : width === "md" ? "w-14 min-w-14" : width === "sm" ? "w-12 min-w-12" : ""} text-gray-900`}
     >
-      <div className="flex w-full flex-row items-center justify-center">
+      <div className="relative flex w-full flex-row items-center justify-center">
         <Tooltip>
           <TooltipTrigger asChild>
             <Button
               variant="ghost"
-              className="-mx-1.5 flex h-fit flex-row items-center gap-0.5 px-1.5 py-1 text-xs"
+              className={`${sortKey === selectedSortKey ? "absolute" : ""} -mx-1.5 flex h-fit flex-row items-center gap-0.5 px-1.5 py-1 text-xs`}
               onClick={() => {
                 if (sortKey === selectedSortKey) {
                   setSortState(sortKey, !sortDesc);
@@ -319,12 +325,12 @@ function THSortableSmallTooltip({
 }) {
   return (
     <TableHead className="w-10 min-w-10">
-      <div className="flex w-full flex-row items-center justify-center">
+      <div className="relative flex w-full flex-row items-center justify-center">
         <Tooltip>
           <TooltipTrigger asChild>
             <Button
               variant="ghost"
-              className="-mx-1.5 flex h-fit flex-row items-center gap-0.5 px-1.5 py-1 text-xs"
+              className={`${sortKey === selectedSortKey ? "absolute" : ""} -mx-1.5 flex h-fit flex-row items-center gap-0.5 px-1.5 py-1 text-xs`}
               onClick={() => {
                 if (sortKey === selectedSortKey) {
                   setSortState(sortKey, !sortDesc);
@@ -382,7 +388,7 @@ function Row({ row, showDetails }: { row: Row; showDetails: boolean }) {
         </div>
       </TableCell>
       <TableCell className="sticky left-0 z-10 min-w-44 max-w-96 font-semibold text-gray-900">
-        <div className="-mx-2 -my-1 bg-white px-2 py-1 transition-colors group-hover/row:bg-gray-50">
+        <div className="-mx-2 -my-2 bg-white px-2 py-2 transition-colors group-hover/row:bg-gray-50">
           <div className="flex flex-row items-center gap-2.5">
             <div className="relative h-6 w-6">
               <Image
@@ -392,11 +398,10 @@ function Row({ row, showDetails }: { row: Row; showDetails: boolean }) {
                   row.pl_id +
                   ".png"
                 }
-                // height={24}
-                // width={24}
                 fill={true}
+                sizes="50px"
                 draggable={false}
-                className="top-0 flex-shrink-0 select-none object-contain"
+                className="flex-shrink-0 select-none object-contain"
               />
             </div>
             <span>{row.name}</span>
@@ -505,7 +510,7 @@ function Row({ row, showDetails }: { row: Row; showDetails: boolean }) {
         {row.pts}
       </TableCell>
       <TableCell>
-        <div className="flex flex-row items-center gap-1">
+        <div className="flex w-fit min-w-24 flex-row items-center gap-1">
           {row.form.map((r, i) => (
             <Form key={i} result={r} outline={i === formLatestIndex} />
           ))}
@@ -599,11 +604,84 @@ function Form({
 }) {
   return (
     <div
-      className={`${result === null ? "invisible" : "visible"} ${result === "W" ? "bg-emerald-500 outline-emerald-500" : result === "L" ? "bg-rose-500 outline-rose-500" : "bg-gray-500 outline-gray-500"} ${outline ? "underline outline" : ""} relative h-4 w-4 select-none rounded-full outline-1 outline-offset-1`}
+      className={`${result === null ? "invisible" : "visible"} ${result === "W" ? "bg-emerald-500 outline-emerald-500" : result === "L" ? "bg-rose-500 outline-rose-500" : "bg-gray-500 outline-gray-500"} ${outline ? "outline" : ""} relative h-4 w-4 select-none rounded-full outline-1 outline-offset-1`}
     >
       <div className="absolute left-1/2 top-1/2 -translate-x-1/2 -translate-y-1/2 text-[11px] font-medium leading-3 text-white">
         {result}
       </div>
     </div>
+  );
+}
+
+function SkeletonRow({ showDetails }: { showDetails: boolean }) {
+  return (
+    <TableRow className="group/row">
+      <TableCell className="w-20 min-w-20">
+        <Skeleton className="h-6 w-full" />
+      </TableCell>
+      <TableCell className="sticky left-0 z-10 min-w-44 max-w-96 font-semibold text-gray-900">
+        <div className="-mx-2 -my-2 bg-white px-2 py-2 transition-colors group-hover/row:bg-gray-50">
+          <Skeleton className="h-6 w-full" />
+        </div>
+      </TableCell>
+      <TableCell className="w-16 min-w-16 text-center text-base font-medium text-gray-900">
+        <Skeleton className="h-6 w-full" />
+      </TableCell>
+      <TableCell className="w-12 min-w-12 text-center text-sm font-medium text-gray-900">
+        <Skeleton className="h-6 w-full" />
+      </TableCell>
+      <TableCell className="w-12 min-w-12 text-center text-sm font-medium text-gray-900">
+        <Skeleton className="h-6 w-full" />
+      </TableCell>
+      <TableCell className="text-center text-sm font-medium">
+        <Skeleton className="h-6 w-full" />
+      </TableCell>
+      <TableCell className="text-center text-sm font-medium">
+        <Skeleton className="h-6 w-full" />
+      </TableCell>
+      <TableCell className="text-center text-sm font-medium">
+        <Skeleton className="h-6 w-full" />
+      </TableCell>
+      <TableCell className="w-20 min-w-20">
+        <Skeleton className="h-6 w-20" />
+      </TableCell>
+      <TableCell className="w-12 min-w-12 text-center text-sm font-medium">
+        <Skeleton className="h-6 w-full" />
+      </TableCell>
+      <TableCell className="w-12 min-w-12 text-center text-sm font-medium">
+        <Skeleton className="h-6 w-full" />
+      </TableCell>
+      <TableCell className="w-10 min-w-10 text-center text-sm font-medium">
+        <Skeleton className="h-6 w-full" />
+      </TableCell>
+      {showDetails && (
+        <>
+          <TableCell className="w-10 min-w-10 text-center text-sm font-medium">
+            <Skeleton className="h-6 w-full" />
+          </TableCell>
+          <TableCell className="w-10 min-w-10 text-center text-sm font-medium">
+            <Skeleton className="h-6 w-full" />
+          </TableCell>
+          <TableCell className="w-10 min-w-10 text-center text-sm font-medium">
+            <Skeleton className="h-6 w-full" />
+          </TableCell>
+          <TableCell className="w-10 min-w-10 text-center text-sm font-medium">
+            <Skeleton className="h-6 w-full" />
+          </TableCell>
+          <TableCell className="w-10 min-w-10 text-center text-sm font-medium">
+            <Skeleton className="h-6 w-full" />
+          </TableCell>
+          <TableCell className="w-10 min-w-10 text-center text-sm font-medium">
+            <Skeleton className="h-6 w-full" />
+          </TableCell>
+        </>
+      )}
+      <TableCell className="w-10 min-w-10 text-center text-sm font-medium">
+        <Skeleton className="h-6 w-full" />
+      </TableCell>
+      <TableCell>
+        <Skeleton className="h-6 w-24" />
+      </TableCell>
+    </TableRow>
   );
 }
