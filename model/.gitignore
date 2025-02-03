@@ -1,0 +1,7 @@
+.env
+.venv
+*.ipynb
+__pycache__
+*.db*
+*.wal
+*.tmp/

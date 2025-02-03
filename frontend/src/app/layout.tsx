@@ -18,7 +18,7 @@ const doppioOne = Doppio_One({
 export const metadata: Metadata = {
   title: "PLFI - Premier League Football Index",
   description:
-    "The latest Premier League soccer power rankings, predictions, and season projections.",
+    "The latest Premier League match predictions, power rankings, and season projections.",
 };
 
 export default function RootLayout({

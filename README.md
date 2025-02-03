@@ -1,36 +1,98 @@
-This is a [Next.js](https://nextjs.org) project bootstrapped with [`create-next-app`](https://nextjs.org/docs/app/api-reference/cli/create-next-app).
+# ⚽ PLFI
 
-## Getting Started
+Premier League match predictions, power rankings, and season projections, updated daily.
 
-First, run the development server:
+PLFI is a simplified version of FiveThirtyEight's discontinued [Soccer Power Index (SPI) prediction model](https://fivethirtyeight.com/methodology/how-our-club-soccer-predictions-work/).
 
-```bash
-npm run dev
-# or
-yarn dev
-# or
-pnpm dev
-# or
-bun dev
-```
+## Methodology
 
-Open [http://localhost:3000](http://localhost:3000) with your browser to see the result.
+Read about the methodology here. Currently, only Premier League match results factor into the model (no European or cup matches). PLFI ratings begin in the 2017/18 season, when expected goals stats are first available via FBRef.
 
-You can start editing the page by modifying `app/page.tsx`. The page auto-updates as you edit the file.
+## Accuracy
 
-This project uses [`next/font`](https://nextjs.org/docs/app/building-your-application/optimizing/fonts) to automatically optimize and load [Geist](https://vercel.com/font), a new font family for Vercel.
+Across 2,660 matches over 7 seasons (2017/18 - 2023/24), PLFI had an average ranked probability score of 0.2012 (sd 0.1474, median 0.1634).
 
-## Learn More
+### Metrics
 
-To learn more about Next.js, take a look at the following resources:
+#### Ranked probability score (RPS)
 
-- [Next.js Documentation](https://nextjs.org/docs) - learn about Next.js features and API.
-- [Learn Next.js](https://nextjs.org/learn) - an interactive Next.js tutorial.
+$\text{RPS} = \frac{1}{n-1} \sum\limits_{i=1}^{n}\Bigl(\sum\limits_{j=1}^{i} (p_j - o_j)\Bigr)^2$\
+where\
+&emsp;$n$ is the number of possible outcomes (3),\
+&emsp;$p_j$ is the probability placed on outcome $j$, and\
+&emsp;$o_j$ is 1 if outcome $j$ actually occurred, else 0
 
-You can check out [the Next.js GitHub repository](https://github.com/vercel/next.js) - your feedback and contributions are welcome!
+Ranked probability score (RPS) is sensitive to distance between match outcomes; i.e., a win is considered closer to a draw than to a loss. For a match that results in a win, a forecast that predicted 50% win, 40% draw, and 10% loss has a lower (better) RPS than one that predicted 50% win, 10% draw, and 40% loss. RPS ranges from 0 (perfect) to 1 (entirely wrong).
 
-## Deploy on Vercel
+#### Ignorance score (IGN)
 
-The easiest way to deploy your Next.js app is to use the [Vercel Platform](https://vercel.com/new?utm_medium=default-template&filter=next.js&utm_source=create-next-app&utm_campaign=create-next-app-readme) from the creators of Next.js.
+$\text{IGN} = -\log_2(p_y)$ &emsp; where $p_y$ is the probability placed on the outcome that actually occurred
 
-Check out our [Next.js deployment documentation](https://nextjs.org/docs/app/building-your-application/deploying) for more details.
+Ignorance score (IGN) is not sensitive to distance, and only considers the probability placed on the actual outcome. For a match that results in a win, a forecast that predicted 50% win, 40% draw, and 10% loss has the same IGN as one that predicted 50% win, 10% draw, and 40% loss. IGN ranges from 0 (perfect) to infinity.
+
+#### Brier score (BS)
+
+$\text{BS} = \frac{1}{n} \sum\limits_{i=1}^{n}(p_i - o_i)^2$\
+where\
+&emsp;$n$ is the number of possible outcomes (3),\
+&emsp;$p_i$ is the probability placed on outcome $i$, and\
+&emsp;$o_i$ is 1 if outcome $i$ actually occurred, else 0
+
+Brier score (BS) is not sensitive to distance, but still considers all probabilities. For a match that results in a win, a forecast that predicted 50% win, 40% draw, and 10% loss has the same BS as one that predicted 50% win, 10% draw, and 40% loss. BS ranges from 0 (perfect) to 1 (entirely wrong).
+
+### Model comparison
+
+**Model performance across 2,280 matches from 2017/18 - 2022/23**\
+_Lower scores are better_
+
+| Model                                                                       | Average RPS | Median RPS | Average IGN | Median IGN | Average BS | Median BS |
+| --------------------------------------------------------------------------- | ----------- | ---------- | ----------- | ---------- | ---------- | --------- |
+| Baseline model                                                              | 0.2334      | 0.1976     | 1.534       | 1.699      | 0.2144     | 0.2469    |
+| [Bet365 betting odds](https://www.football-data.co.uk/englandm.php)         | 0.2410      | 0.1669     | 1.3153      | 1.2630     | 0.1869     | 0.1782    |
+| [FiveThirtyEight](https://projects.fivethirtyeight.com/soccer-predictions/) | 0.1970      | 0.1633     | 1.3818      | 1.3414     | 0.1890     | 0.1843    |
+| PLFI                                                                        | 0.2024      | 0.1636     | 1.4092      | 1.3486     | 0.1933     | 0.1858    |
+
+For comparison purposes, I've also included a baseline model. This model simply uses league-average home win, draw, and loss probabilities for all predictions. Since 2010, home teams have won around 45.2% of their matches, drawn 24.0%, and lost 30.8%. The model places these probabilities on every match, regardless of the two teams playing.
+
+<!-- - **Goals model**: Consider each team's average goals scored (avg_gs) and goals against (avg_ga) so far in the current season. Get each team's projected goals scored by averaging the team's avg_gs and its opponent's avg_ga. Assign probabilities by subtracting two independent Poisson distributions with the two projected goals as the expected rates. -->
+
+<!-- baseline:
+
+- rps 0.233563 0.077402 0.197584 2280
+- ign 1.534237 0.372903 1.698998 2280
+- bs 0.214441 0.05938 0.246923 2280
+
+bet365:
+
+- rps 0.241042 0.213181 0.166884 2280
+- ign 1.315298 0.757025 1.263034 2280
+- bs 0.186878 0.118918 0.17823 2280
+
+FiveThirtyEight:
+
+- rps avg: 0.196954 sd: 0.138706 median: 0.163296 count: 2280
+- ign 1.381826 0.729923 1.341356 2280
+- bs 0.189048 0.11531 0.184306 2280
+
+PLFI:
+
+- rps avg: 0.202384 sd: 0.148538 median: 0.163565 count: 2280
+- ign 1.40924 0.781196 1.348564 2280
+- bs 0.193285 0.122913 0.185781 2280 -->
+
+## Implementation
+
+At a high level, a daily cron job retrieves the latest scores and stats, then updates a local DuckDB database. The model updates each club's ratings and makes predictions for upcoming fixtures. This information is then written to MongoDB Atlas in the cloud, where the PLFI website fetches data from.
+
+## Data sources
+
+- [FBRef](https://fbref.com/)
+- [FotMob](https://www.fotmob.com/)
+- [Transfermarkt](https://www.transfermarkt.us/)
+- [Premier League](https://www.premierleague.com/)
+
+## Tools Used
+
+**Backend**: Python, requests, DuckDB, MongoDB
+
+**Frontend**: Typescript, Next.js, Tailwind CSS, shadcn/ui

@@ -56,8 +56,8 @@ export default function Navbar() {
             </div>
           </div>
           <div className="hidden flex-1 text-base leading-5 text-gray-500 md:inline-block">
-            A simple, fairly accurate power rankings model for the Premier
-            League, based on FiveThirtyEight&rsquo;s SPI model&nbsp;&nbsp;
+            A simple, fairly accurate prediction model for the Premier League,
+            based on FiveThirtyEight&rsquo;s SPI model&nbsp;&nbsp;
             <span className="hidden md:inline-block">
               ·&nbsp;&nbsp;
               <a
