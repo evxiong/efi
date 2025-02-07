@@ -6,6 +6,7 @@ import dataclasses
 import duckdb
 import numpy as np
 import pandas as pd
+from . import scoring
 from .data import (
     Match,
     TableSnapshot,
@@ -1044,6 +1045,157 @@ def upsert_projections(values: list[Projection]):
             SELECT * FROM df
         """
         )
+
+
+def evaluate_rps(
+    competition_id: int | None = None, start: int | None = None, end: int | None = None
+) -> pd.DataFrame:
+    """Evaluates model using RPS over given competition and seasons.
+
+    RPS: ranked probability score. See README.md for details.
+
+    Args:
+        competition_id (int | None, optional): restrict evaluation to a single
+            competition using competition's db id, ex. 1 for Premier League. If
+            None, evaluates model over all competitions. Defaults to None.
+        start (int | None, optional): earlier year of first season to include in
+            evaluation (ex. 2016 means 2016/17). If None, starts from earliest
+            possible season per competition. Defaults to None.
+        end (int | None, optional): later year of final season to include in
+            evaluation (ex. 2025 means 2024/25). If None, ends at most recent
+            season per competition. Defaults to None.
+
+    Returns:
+        pd.DataFrame: dataframe with average RPS, standard deviation, median,
+            and number of matches the model was evaluated over.
+    """
+    with duckdb.connect(DB_FILE) as con:
+        con.create_function("compute_rps", scoring.compute_rps)
+        df = con.execute(
+            """
+            SELECT avg(rps) AS avg_rps, stddev(rps) AS sd_rps, median(rps) AS med_rps, COUNT(*) AS count
+            FROM (
+                SELECT season, time, prob_1, prob_d, prob_2, score_1, score_2,
+                    compute_rps(
+                        array_value(prob_1, prob_d, prob_2),
+                        array_value(
+                            CASE WHEN score_1 > score_2 THEN 1 ELSE 0 END, 
+                            CASE WHEN score_1 = score_2 THEN 1 ELSE 0 END, 
+                            CASE WHEN score_1 < score_2 THEN 1 ELSE 0 END
+                        )
+                    ) as rps
+                FROM matches
+                WHERE
+                    ($competition_id IS NULL OR competition_id = $competition_id) AND
+                    ($start IS NULL OR season >= $start) AND
+                    ($end IS NULL OR season < $end)
+                ORDER BY time
+            )
+            """,
+            {"competition_id": competition_id, "start": start, "end": end},
+        ).df()
+
+    return df
+
+
+def evaluate_ign(
+    competition_id: int | None = None, start: int | None = None, end: int | None = None
+) -> pd.DataFrame:
+    """Evaluates model using IGN over given competition and seasons.
+
+    IGN: ignorance score. See README.md for details.
+
+    Args:
+        competition_id (int | None, optional): restrict evaluation to a single
+            competition using competition's db id, ex. 1 for Premier League. If
+            None, evaluates model over all competitions. Defaults to None.
+        start (int | None, optional): earlier year of first season to include in
+            evaluation (ex. 2016 means 2016/17). If None, starts from earliest
+            possible season per competition. Defaults to None.
+        end (int | None, optional): later year of final season to include in
+            evaluation (ex. 2025 means 2024/25). If None, ends at most recent
+            season per competition. Defaults to None.
+
+    Returns:
+        pd.DataFrame: dataframe with average IGN, standard deviation, median,
+            and number of matches the model was evaluated over.
+    """
+    with duckdb.connect(DB_FILE) as con:
+        df = con.execute(
+            """
+            SELECT avg(ign) AS avg_ign, stddev(ign) AS sd_ign, median(ign) AS med_ign, COUNT(*) AS count
+            FROM (
+                SELECT season, time, prob_1, prob_d, prob_2, score_1, score_2,
+                    -log2(
+                        CASE
+                            WHEN score_1 > score_2 THEN prob_1
+                            WHEN score_1 = score_2 THEN prob_d
+                            ELSE prob_2
+                        END
+                    ) as ign
+                FROM matches
+                WHERE
+                    ($competition_id IS NULL OR competition_id = $competition_id) AND
+                    ($start IS NULL OR season >= $start) AND
+                    ($end IS NULL OR season < $end)
+                ORDER BY time
+            )
+            """,
+            {"competition_id": competition_id, "start": start, "end": end},
+        ).df()
+
+    return df
+
+
+def evaluate_bs(
+    competition_id: int | None = None, start: int | None = None, end: int | None = None
+) -> pd.DataFrame:
+    """Evaluates model using BS over given competition and seasons.
+
+    BS: Brier score. See README.md for details.
+
+    Args:
+        competition_id (int | None, optional): restrict evaluation to a single
+            competition using competition's db id, ex. 1 for Premier League. If
+            None, evaluates model over all competitions. Defaults to None.
+        start (int | None, optional): earlier year of first season to include in
+            evaluation (ex. 2016 means 2016/17). If None, starts from earliest
+            possible season per competition. Defaults to None.
+        end (int | None, optional): later year of final season to include in
+            evaluation (ex. 2025 means 2024/25). If None, ends at most recent
+            season per competition. Defaults to None.
+
+    Returns:
+        pd.DataFrame: dataframe with average BS, standard deviation, median,
+            and number of matches the model was evaluated over.
+    """
+    with duckdb.connect(DB_FILE) as con:
+        con.create_function("compute_bs", scoring.compute_bs)
+        df = con.execute(
+            """
+            SELECT avg(bs) AS avg_bs, stddev(bs) AS sd_bs, median(bs) AS med_bs, COUNT(*) AS count
+            FROM (
+                SELECT season, time, prob_1, prob_d, prob_2, score_1, score_2,
+                    compute_bs(
+                        array_value(prob_1, prob_d, prob_2),
+                        array_value(
+                            CASE WHEN score_1 > score_2 THEN 1 ELSE 0 END,
+                            CASE WHEN score_1 = score_2 THEN 1 ELSE 0 END,
+                            CASE WHEN score_1 < score_2 THEN 1 ELSE 0 END
+                        )
+                    ) as bs
+                FROM matches
+                WHERE
+                    ($competition_id IS NULL OR competition_id = $competition_id) AND
+                    ($start IS NULL OR season >= $start) AND
+                    ($end IS NULL OR season < $end)
+                ORDER BY time
+            )
+            """,
+            {"competition_id": competition_id, "start": start, "end": end},
+        ).df()
+
+    return df
 
 
 if __name__ == "__main__":
