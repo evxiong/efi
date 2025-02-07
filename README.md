@@ -15,17 +15,18 @@ factor into the model (no European or cup matches). PLFI ratings begin in the
 ## Accuracy
 
 Across 2,660 matches over 7 seasons (2017/18 - 2023/24), PLFI had an average
-ranked probability score of 0.2010 (sd 0.1479, median 0.1627).
+ranked probability score of **0.2010** (sd 0.1479, median 0.1627).
 
 ### Metrics
 
 #### Ranked probability score (RPS)
 
-$\text{RPS} = \frac{1}{n-1} \sum\limits_{i=1}^{n}\Bigl(\sum\limits_{j=1}^{i} (p_j - o_j)\Bigr)^2$\
+$$\text{RPS} = \frac{1}{n-1} \sum\limits_{i=1}^{n}\Biggl(\sum\limits_{j=1}^{i}\bigl(p_j - o_j\bigr)\Biggr)^2$$
+
 where\
-&emsp;$n$ is the number of possible outcomes (3),\
-&emsp;$p_j$ is the probability placed on outcome $j$, and\
-&emsp;$o_j$ is 1 if outcome $j$ actually occurred, else 0
+&emsp; $n$ is the number of possible outcomes (3),\
+&emsp; $p_j$ is the probability placed on outcome $j$, and\
+&emsp; $o_j$ is 1 if outcome $j$ actually occurred, else 0
 
 Ranked probability score (RPS) is sensitive to distance between match outcomes;
 i.e., a win is considered closer to a draw than to a loss. For a match that
@@ -35,7 +36,10 @@ RPS ranges from 0 (perfect) to 1 (entirely wrong).
 
 #### Ignorance score (IGN)
 
-$\text{IGN} = -\log_2(p_y)$ &emsp; where $p_y$ is the probability placed on the
+$$\text{IGN} = -\log_2(p_y)$$
+
+where\
+&emsp; $p_y$ is the probability placed on the
 outcome that actually occurred
 
 Ignorance score (IGN) is not sensitive to distance, and only considers the
@@ -46,11 +50,12 @@ infinity.
 
 #### Brier score (BS)
 
-$\text{BS} = \frac{1}{n} \sum\limits_{i=1}^{n}(p_i - o_i)^2$\
+$$\text{BS} = \frac{1}{n} \sum\limits_{i=1}^{n}\bigl(p_i - o_i\bigr)^2$$
+
 where\
-&emsp;$n$ is the number of possible outcomes (3),\
-&emsp;$p_i$ is the probability placed on outcome $i$, and\
-&emsp;$o_i$ is 1 if outcome $i$ actually occurred, else 0
+&emsp; $n$ is the number of possible outcomes (3),\
+&emsp; $p_i$ is the probability placed on outcome $i$, and\
+&emsp; $o_i$ is 1 if outcome $i$ actually occurred, else 0
 
 Brier score (BS) is not sensitive to distance, but still considers all
 probabilities. For a match that results in a win, a forecast that predicted 50%
