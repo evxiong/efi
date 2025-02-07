@@ -1,5 +1,5 @@
 import Image from "next/image";
-import { Score } from "../data/scoreData";
+import type { Score } from "../data/scoreData";
 
 export default function Score({
   score,

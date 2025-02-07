@@ -15,7 +15,7 @@ import {
   IconChevronUp,
   IconEqual,
 } from "@tabler/icons-react";
-import { Row } from "../data/tableData";
+import type { Row } from "../data/tableData";
 import {
   Tooltip,
   TooltipContent,
