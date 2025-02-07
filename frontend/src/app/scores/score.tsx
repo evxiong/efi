@@ -60,11 +60,7 @@ export default function Score({
               <div className="relative h-5 w-5">
                 <Image
                   alt={score.club_1 + " logo"}
-                  src={
-                    "https://resources.premierleague.com/premierleague/badges/50/" +
-                    score.pl_id_1 +
-                    ".png"
-                  }
+                  src={score.icon_link_1}
                   sizes="50px"
                   fill={true}
                   draggable={false}
@@ -86,11 +82,7 @@ export default function Score({
               <div className="relative h-5 w-5">
                 <Image
                   alt={score.club_2 + " logo"}
-                  src={
-                    "https://resources.premierleague.com/premierleague/badges/50/" +
-                    score.pl_id_2 +
-                    ".png"
-                  }
+                  src={score.icon_link_2}
                   sizes="50px"
                   fill={true}
                   draggable={false}
@@ -102,7 +94,7 @@ export default function Score({
             <div>{score.score_2}</div>
           </div>
         </div>
-        <div className="text-ss flex w-10 flex-shrink-0 select-none flex-col font-normal text-gray-500">
+        <div className="flex w-10 flex-shrink-0 select-none flex-col text-ss font-normal text-gray-500">
           <div
             className={`${W ? "border font-semibold text-gray-900" : prob_1_max ? "font-semibold text-zinc-900" : ""} flex h-5 items-center justify-center rounded-[0.25rem] border-gray-900`}
           >

@@ -2,7 +2,7 @@ export interface Row {
   update_date: string;
   rank: number;
   change: number;
-  pl_id: string;
+  icon_link: string;
   name: string;
   efi: number;
   off: number;

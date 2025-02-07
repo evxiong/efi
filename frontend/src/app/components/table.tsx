@@ -393,11 +393,7 @@ function Row({ row, showDetails }: { row: Row; showDetails: boolean }) {
             <div className="relative h-6 w-6">
               <Image
                 alt={row.name + " logo"}
-                src={
-                  "https://resources.premierleague.com/premierleague/badges/50/" +
-                  row.pl_id +
-                  ".png"
-                }
+                src={row.icon_link}
                 fill={true}
                 sizes="50px"
                 draggable={false}
@@ -471,7 +467,7 @@ function Row({ row, showDetails }: { row: Row; showDetails: boolean }) {
       <TableCell className="w-20 min-w-20">
         <Positions
           name={row.name}
-          pl_id={row.pl_id}
+          icon_link={row.icon_link}
           probs={row.prob_positions}
         />
       </TableCell>
@@ -526,11 +522,11 @@ function Row({ row, showDetails }: { row: Row; showDetails: boolean }) {
 
 function Positions({
   name,
-  pl_id,
+  icon_link,
   probs,
 }: {
   name: string;
-  pl_id: string;
+  icon_link: string;
   probs: number[];
 }) {
   return (
@@ -563,11 +559,7 @@ function Positions({
           <div className="mb-3 flex flex-row items-center gap-1 text-sm font-semibold text-gray-700">
             <Image
               alt={name + " logo"}
-              src={
-                "https://resources.premierleague.com/premierleague/badges/50/" +
-                pl_id +
-                ".png"
-              }
+              src={icon_link}
               height={16}
               width={16}
               draggable={false}

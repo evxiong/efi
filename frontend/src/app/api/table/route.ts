@@ -24,6 +24,7 @@ export async function GET(request: NextRequest) {
     const tables = db.collection("tables");
     const table = await tables.findOne(
       {
+        competition_id: 1,
         season: season,
         matchweek: matchweek,
       },

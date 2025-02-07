@@ -1,7 +1,7 @@
 export interface Score {
   matchweek: number;
-  pl_id_1: string;
-  pl_id_2: string;
+  icon_link_1: string;
+  icon_link_2: string;
   club_1: string;
   club_2: string;
   score_1: number | null;

@@ -10,7 +10,7 @@ export async function GET() {
     const db = client.db("efi");
     const latest = db.collection("latest");
     const result = await latest.findOne(
-      {},
+      { competition_id: 1 },
       { projection: { _id: 0, seasons: 1, scores: 1, table: 1 } },
     );
     return Response.json({ latest: result });

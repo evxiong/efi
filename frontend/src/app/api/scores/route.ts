@@ -28,8 +28,12 @@ export async function GET(request: NextRequest) {
     const cursor = scores.find(
       {
         $or: [
-          { season: season, matchweek: matchweek },
-          { season: season, "scores.display_with_matchweek": matchweek },
+          { competition_id: 1, season: season, matchweek: matchweek },
+          {
+            competition_id: 1,
+            season: season,
+            "scores.display_with_matchweek": matchweek,
+          },
         ],
       },
       { sort: { "scores.time": 1 } },
