@@ -1,7 +1,8 @@
-import type { Metadata } from "next";
+import Metadata from "next/types";
 import { Doppio_One, IBM_Plex_Sans } from "next/font/google";
 import "./globals.css";
 import Navbar from "./components/navbar";
+import { GoogleAnalytics } from "@next/third-parties/google";
 
 const ibmPlexSans = IBM_Plex_Sans({
   weight: ["300", "400", "500", "600"],
@@ -35,6 +36,7 @@ export default function RootLayout({
         <Navbar />
         {children}
       </body>
+      <GoogleAnalytics gaId="G-CJJBCNV2DD" />
     </html>
   );
 }
