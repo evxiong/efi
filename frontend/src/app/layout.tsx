@@ -1,4 +1,3 @@
-import Metadata from "next/types";
 import { Doppio_One, IBM_Plex_Sans } from "next/font/google";
 import "./globals.css";
 import Navbar from "./components/navbar";
@@ -16,7 +15,7 @@ const doppioOne = Doppio_One({
   subsets: ["latin"],
 });
 
-export const metadata: Metadata = {
+export const metadata = {
   title: "PLFI - Premier League Football Index",
   description:
     "The latest Premier League match predictions, power rankings, and season projections.",
