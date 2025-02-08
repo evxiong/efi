@@ -1,7 +1,7 @@
 """
 Functions for updating populated DuckDB database with newly completed matches.
 
-Run `python src.efi.update` as daily update script.
+Run `python -m src.efi.update` from inside `model/` to perform daily updates.
 """
 
 from . import db
@@ -9,7 +9,7 @@ from . import model
 from . import mongo
 from . import scrape
 from .data import Match, Projection, TableSnapshot, ClubSnapshot
-from datetime import date, timedelta
+from datetime import date, datetime, timedelta, timezone
 from tqdm import tqdm
 
 
@@ -428,4 +428,12 @@ def update(competition_id: int, season: int):
 
 
 if __name__ == "__main__":
-    update(1, 2024)
+    try:
+        update(1, 2024)
+        with open("log.txt", "a+") as fd:
+            fd.write(f"{datetime.now(timezone.utc).strftime("%Y-%m-%dT%H:%M:%SZ")}\n")
+    except Exception as e:
+        with open("log.txt", "a+") as fd:
+            fd.write(
+                f"> {datetime.now(timezone.utc).strftime("%Y-%m-%dT%H:%M:%SZ")} ERROR: {e}\n"
+            )
