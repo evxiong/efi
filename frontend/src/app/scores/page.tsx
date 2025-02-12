@@ -133,7 +133,7 @@ export default function ScoresTab() {
             </div>
             <div className="text-xs font-medium text-gray-500 md:text-right">
               <p>All times shown in your local time.</p>
-              <p>Scores update daily around midnight London time.</p>
+              <p>Scores update daily around midnight UTC.</p>
             </div>
           </div>
           {matchweek === null || isLoading ? (

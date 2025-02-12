@@ -161,7 +161,7 @@ export default function TableTab() {
                       ? matchweek === 0
                         ? "Preseason rankings"
                         : `Includes ${completedMatches} of ${totalMatches} matches played in Matchweek ${matchweek}.`
-                      : "Rankings update daily around midnight London time."}
+                      : "Rankings update daily around midnight UTC."}
                   </p>
                 )}
               </div>

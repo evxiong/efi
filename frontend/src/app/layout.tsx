@@ -31,7 +31,7 @@ export default function RootLayout({
       lang="en"
       className={`${ibmPlexSans.variable} ${doppioOne.variable} antialiased`}
     >
-      <body className="min-h-screen w-screen overflow-x-hidden scroll-smooth font-sans text-gray-900">
+      <body className="scroll-smooth font-sans text-gray-900">
         <Navbar />
         {children}
       </body>
