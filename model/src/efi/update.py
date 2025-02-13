@@ -373,7 +373,7 @@ def update(competition_id: int, season: int):
             db.update_matches_performances([updated_match])
             update_history(competition_id, season, updated_match, *old_snapshots)
 
-        current_matchweek = m.matchweek
+        current_matchweek = m.display_with_matchweek
         current_match_date = m.time.date()
 
     # Always update end-of-season projections after all newly completed matches
