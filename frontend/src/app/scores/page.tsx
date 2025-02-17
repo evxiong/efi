@@ -89,7 +89,7 @@ export default function ScoresTab() {
   return (
     <div className="flex w-full flex-col">
       <section className="mx-auto flex w-full max-w-7xl px-4 sm:px-6">
-        <div className="mb-20 flex w-full flex-col gap-4 pt-2">
+        <div className="mb-10 flex w-full flex-col gap-4 pt-2">
           <div className="flex flex-col gap-6 md:flex-row md:items-center md:justify-between">
             <div className="flex flex-row gap-2.5">
               <Select

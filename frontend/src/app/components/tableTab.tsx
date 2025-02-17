@@ -94,7 +94,7 @@ export default function TableTab() {
   return (
     <div className="flex w-full flex-col">
       <section className="mx-auto flex w-full max-w-7xl px-4 sm:px-6">
-        <div className="mb-40 flex w-full flex-col gap-4 pt-2">
+        <div className="mb-20 flex w-full flex-col gap-4 pt-2">
           <div className="flex flex-col gap-6">
             <div className="flex flex-col justify-between gap-4 md:flex-row md:items-center">
               <div className="flex flex-row gap-2.5">
