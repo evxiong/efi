@@ -717,6 +717,8 @@ def get_mongo_scores(competition_id: int, season: int | None = None) -> pd.DataF
                 m.completed,
                 c1.short_name AS club_1,
                 c2.short_name AS club_2,
+                c1.abbrev AS club_1_abbrev,
+                c2.abbrev AS club_2_abbrev,
                 m.score_1,
                 m.score_2,
                 m.prob_1,
