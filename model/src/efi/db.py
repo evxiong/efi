@@ -769,6 +769,45 @@ def get_mongo_latest_scores_info(competition_id: int) -> pd.DataFrame:
     return df
 
 
+def get_mongo_latest_trends(competition_id: int, season: int) -> pd.DataFrame:
+    with duckdb.connect(DB_FILE) as con:
+        df = con.execute(
+            """
+            -- Get clubs with largest increase and decrease in EFI over
+            -- their 4 latest matches in given competition and season.
+            WITH cte AS (
+                SELECT
+                    c.short_name, 
+                    c.icon_link,
+                    ARRAY_AGG(efi ORDER BY m.time DESC)[1] - ARRAY_AGG(efi ORDER BY m.time DESC)[5] AS change,
+                    ARRAY_AGG(efi ORDER BY m.time DESC)[1] AS current
+                FROM history h
+                LEFT JOIN matches m ON h.match_id = m.id
+                JOIN clubs c ON h.club_id = c.id
+                WHERE h.competition_id = ? AND h.season = ?
+                GROUP BY h.club_id, c.short_name, c.icon_link
+                HAVING change IS NOT NULL
+            )
+            (
+                SELECT *
+                FROM cte
+                ORDER BY change DESC
+                LIMIT 1
+            )
+            UNION
+            (
+                SELECT *
+                FROM cte
+                ORDER BY change ASC 
+                LIMIT 1
+            )
+            ORDER BY change DESC
+            """,
+            [competition_id, season],
+        ).df()
+    return df
+
+
 def get_mongo_competition_seasons(competition_id: int) -> pd.DataFrame:
     with duckdb.connect(DB_FILE) as con:
         df = con.execute(

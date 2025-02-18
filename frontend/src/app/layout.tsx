@@ -16,9 +16,9 @@ const doppioOne = Doppio_One({
 });
 
 export const metadata = {
-  title: "PLFI - Premier League Football Index",
+  title: "EFI - European Football Index",
   description:
-    "The latest Premier League match predictions, power rankings, and season projections.",
+    "Premier League, LaLiga, Serie A, Bundesliga, and Ligue 1 match predictions, power rankings, and season projections.",
 };
 
 export default function RootLayout({

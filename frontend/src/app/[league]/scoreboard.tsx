@@ -8,16 +8,20 @@ import {
   CarouselPrevious,
 } from "@/components/ui/carousel";
 import Image from "next/image";
-import { Score } from "../lib/types";
+import { Competition, Score } from "../lib/types";
 import useSWR from "swr";
 import { useEffect } from "react";
 import { formatDate, formatTime } from "../lib/utils";
 import { Skeleton } from "@/components/ui/skeleton";
 
-export default function Scoreboard() {
+export default function Scoreboard({
+  competition,
+}: {
+  competition: Competition;
+}) {
   const fetcher = (url: string) => fetch(url).then((r) => r.json());
   const { data: latest, mutate: mutateLatest } = useSWR(
-    "/api/latest",
+    `/api/latest?competition=${competition.id}`,
     fetcher,
     {
       revalidateOnFocus: false,
@@ -27,7 +31,7 @@ export default function Scoreboard() {
     },
   );
   const { data: scores_1, isLoading: isLoading_1 } = useSWR(
-    `/api/scores?matchweek=${latest?.latest.scores.matchweek}&season=${latest?.latest.scores.season}`,
+    `/api/scores?competition=${competition.id}&season=${latest?.latest?.scores.season}&matchweek=${latest?.latest?.scores.matchweek}`,
     fetcher,
     {
       revalidateOnFocus: false,
@@ -37,7 +41,7 @@ export default function Scoreboard() {
     },
   );
   const { data: scores_2, isLoading: isLoading_2 } = useSWR(
-    `/api/scores?matchweek=${latest?.latest.scores.matchweek + 1}&season=${latest?.latest.scores.season}`,
+    `/api/scores?competition=${competition.id}&season=${latest?.latest?.scores.season}&matchweek=${latest?.latest?.scores.matchweek + 1}`,
     fetcher,
     {
       revalidateOnFocus: false,

@@ -60,11 +60,11 @@ export default function RankingsTable({
                 </TableHead>
                 <THSortableLargeTooltip
                   width="lg"
-                  name="PLFI"
-                  full="Premier League Football Index"
+                  name="LFI"
+                  full="League Football Index"
                   sortKey="efi"
                   desc="Expected percent of possible points this team would
-                        take against an average Premier League opponent on a
+                        take against an average league opponent on a
                         neutral pitch."
                   note="Higher is better"
                   sortDesc={sortDesc}
@@ -77,7 +77,7 @@ export default function RankingsTable({
                   full="Offensive Rating"
                   sortKey="off"
                   desc="Expected goals this team would score against an average
-                        Premier League opponent on a neutral pitch."
+                        league opponent on a neutral pitch."
                   note="Higher is better"
                   sortDesc={sortDesc}
                   selectedSortKey={selectedSortKey}
@@ -89,7 +89,7 @@ export default function RankingsTable({
                   full="Defensive Rating"
                   sortKey="def"
                   desc="Expected goals this team would concede to an average
-                        Premier League opponent on a neutral pitch."
+                        league opponent on a neutral pitch."
                   note="Lower is better"
                   sortDesc={sortDesc}
                   selectedSortKey={selectedSortKey}

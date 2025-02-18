@@ -1,3 +1,11 @@
+export interface Competition {
+  name: string;
+  slug: string;
+  icon_link: string;
+  id: number;
+  country: string;
+}
+
 export interface Score {
   matchweek: number;
   icon_link_1: string;

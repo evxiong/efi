@@ -12,18 +12,22 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select";
-import type { Row } from "../lib/types";
+import type { Competition, Row } from "../lib/types";
 import { formatDate } from "../lib/utils";
 import useSWR from "swr";
 import { Skeleton } from "@/components/ui/skeleton";
 
-export default function TableTab() {
+export default function TableTab({
+  competition,
+}: {
+  competition: Competition;
+}) {
   const fetcher = (url: string) => fetch(url).then((r) => r.json());
   const {
     data: latest,
     isLoading: latestIsLoading,
     mutate: mutateLatest,
-  } = useSWR("/api/latest", fetcher, {
+  } = useSWR(`/api/latest?competition=${competition.id}`, fetcher, {
     revalidateOnFocus: false,
     revalidateOnMount: false,
     revalidateOnReconnect: false,
@@ -34,12 +38,12 @@ export default function TableTab() {
     i === 0 ? "Preseason" : "Matchweek " + i.toFixed(),
   );
   const [matchweek, setMatchweek] = useState<number | null>(null);
-  const seasons: number[] = latest ? latest.latest.seasons : [];
+  const seasons: number[] = latest?.latest ? latest.latest.seasons : [];
   const seasonOptions = seasons.map((d) => `${d}/${(d + 1) % 100}`);
   const [season, setSeason] = useState<number | null>(null);
 
   const { data, isLoading } = useSWR(
-    `/api/table?matchweek=${matchweek}&season=${season}`,
+    `/api/table?competition=${competition.id}&season=${season}&matchweek=${matchweek}`,
     fetcher,
     {
       revalidateOnFocus: false,
@@ -50,9 +54,9 @@ export default function TableTab() {
   );
 
   useEffect(() => {
-    if (latest === undefined) return;
-    setMatchweek(latest.latest.table.matchweek);
-    setSeason(latest.latest.table.season);
+    if (latest === undefined || !latest.latest) return;
+    setMatchweek(latest.latest?.table.matchweek);
+    setSeason(latest.latest?.table.season);
   }, [latest]);
 
   useEffect(() => {

@@ -12,5 +12,6 @@ export default async function League({
   params: Promise<{ league: string }>;
 }) {
   const leagueSlug = (await params).league;
-  return <TableTab />;
+  const competition = LEAGUES.find((c) => c.slug === leagueSlug)!;
+  return <TableTab competition={competition} />;
 }

@@ -4,14 +4,15 @@ import { NextRequest } from "next/server";
 export const revalidate = 3600;
 
 export async function GET(request: NextRequest) {
-  // Get table for given season and matchweek
+  // Get table for given competition, season, and matchweek
   const searchParams = request.nextUrl.searchParams;
+  const competition = parseInt(searchParams.get("competition")!);
   const season = parseInt(searchParams.get("season")!);
   const matchweek = parseInt(searchParams.get("matchweek")!);
 
-  if (isNaN(season) || isNaN(matchweek)) {
+  if (isNaN(competition) || isNaN(season) || isNaN(matchweek)) {
     return new Response(
-      "Error: both season and matchweek must be specified in /api/table",
+      "Error: competition, season, and matchweek must be specified in /api/table",
       {
         status: 400,
       },
@@ -24,7 +25,7 @@ export async function GET(request: NextRequest) {
     const tables = db.collection("tables");
     const table = await tables.findOne(
       {
-        competition_id: 1,
+        competition_id: competition,
         season: season,
         matchweek: matchweek,
       },

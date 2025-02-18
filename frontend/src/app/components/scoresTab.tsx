@@ -1,6 +1,6 @@
 "use client";
 
-import type { Score as ScoreType } from "../lib/types";
+import type { Competition, Score as ScoreType } from "../lib/types";
 import Score from "./score";
 import {
   Accordion,
@@ -21,10 +21,14 @@ import { useEffect, useState } from "react";
 import { Skeleton } from "@/components/ui/skeleton";
 import useSWR from "swr";
 
-export default function ScoresTab() {
+export default function ScoresTab({
+  competition,
+}: {
+  competition: Competition;
+}) {
   const fetcher = (url: string) => fetch(url).then((r) => r.json());
   const { data: latest, mutate: mutateLatest } = useSWR(
-    "/api/latest",
+    `/api/latest?competition=${competition.id}`,
     fetcher,
     {
       revalidateOnFocus: false,
@@ -38,12 +42,12 @@ export default function ScoresTab() {
     (_, i) => "Matchweek " + (i + 1).toFixed(),
   );
   const [matchweek, setMatchweek] = useState<number | null>(null);
-  const seasons: number[] = latest ? latest.latest.seasons : [];
+  const seasons: number[] = latest?.latest ? latest.latest.seasons : [];
   const seasonOptions = seasons.map((d) => `${d}/${(d + 1) % 100}`);
   const [season, setSeason] = useState<number | null>(null);
 
   const { data, isLoading } = useSWR(
-    `/api/scores?matchweek=${matchweek}&season=${season}`,
+    `/api/scores?competition=${competition.id}&season=${season}&matchweek=${matchweek}`,
     fetcher,
     {
       revalidateOnFocus: false,
@@ -54,9 +58,9 @@ export default function ScoresTab() {
   );
 
   useEffect(() => {
-    if (latest === undefined) return;
-    setMatchweek(latest.latest.scores.matchweek);
-    setSeason(latest.latest.scores.season);
+    if (latest === undefined || !latest.latest) return;
+    setMatchweek(latest.latest?.scores.matchweek);
+    setSeason(latest.latest?.scores.season);
   }, [latest]);
 
   useEffect(() => {
