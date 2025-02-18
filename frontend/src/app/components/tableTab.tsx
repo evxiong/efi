@@ -12,8 +12,8 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select";
-import { Row } from "../data/tableData";
-import { dateStringToFormattedDate } from "../lib/utils";
+import type { Row } from "../lib/types";
+import { formatDate } from "../lib/utils";
 import useSWR from "swr";
 import { Skeleton } from "@/components/ui/skeleton";
 
@@ -31,7 +31,7 @@ export default function TableTab() {
   });
 
   const matchweeks = [...Array(39)].map((_, i) =>
-    i == 0 ? "Preseason" : "Matchweek " + i.toFixed(),
+    i === 0 ? "Preseason" : "Matchweek " + i.toFixed(),
   );
   const [matchweek, setMatchweek] = useState<number | null>(null);
   const seasons: number[] = latest ? latest.latest.seasons : [];
@@ -149,7 +149,7 @@ export default function TableTab() {
                 ) : (
                   <p className="font-semibold">
                     {rows && dateString
-                      ? `Rankings as of ${dateStringToFormattedDate(dateString)}`
+                      ? `Rankings as of ${formatDate(dateString)}`
                       : `No matches have been played in Matchweek ${matchweek}.`}
                   </p>
                 )}

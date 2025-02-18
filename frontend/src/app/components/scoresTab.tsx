@@ -1,6 +1,6 @@
 "use client";
 
-import type { Score as ScoreType } from "../data/scoreData";
+import type { Score as ScoreType } from "../lib/types";
 import Score from "./score";
 import {
   Accordion,

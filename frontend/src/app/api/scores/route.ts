@@ -1,4 +1,4 @@
-import { Score } from "@/app/data/scoreData";
+import { Score } from "@/app/lib/types";
 import { MongoClient } from "mongodb";
 import { NextRequest } from "next/server";
 
