@@ -1,6 +1,6 @@
-name,abbrev,country_code,fotmob_id,fbref_id,transfermarkt_id,transfermarkt_path,avg_base,home_advantage
-Premier League,PL,GB,47,9,GB1,premier-league,1.38,0.15
-LaLiga,LL,ES,87,12,ES1,laliga,,
-Serie A,SA,IT,55,11,IT1,serie-a,,
-Bundesliga,BL,DE,54,20,L1,bundesliga,,
-Ligue 1,L1,FR,53,13,FR1,ligue-1,,
+name,abbrev,country_code,fotmob_id,fbref_id,transfermarkt_id,transfermarkt_path,avg_base,home_advantage,transfer_off_slope,transfer_def_slope,transfer_int
+Premier League,PL,GB,47,9,GB1,premier-league,1.38,0.15,0.3859,-0.2278,1.419
+LaLiga,LL,ES,87,12,ES1,laliga,1.32,0.19,0.3201,-0.202,1.281
+Serie A,SA,IT,55,11,IT1,serie-a,1.37,0.13,0.3078,-0.2725,1.392
+Bundesliga,BL,DE,54,20,L1,bundesliga,1.5,0.21,0.4225,-0.1938,1.552
+Ligue 1,L1,FR,53,13,FR1,ligue-1,1.33,0.16,0.3579,-0.1519,1.348

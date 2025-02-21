@@ -131,6 +131,9 @@ class Competition:
     transfermarkt_path: str
     avg_base: float | None
     home_advantage: float | None
+    transfer_int: float | None
+    transfer_off_slope: float | None
+    transfer_def_slope: float | None
 
 
 @dataclass
@@ -160,3 +163,11 @@ class Event:
     team: int  # 0 for home, 1 for away
     type: str  # "Goal" or "Card"
     minute: int
+
+
+@dataclass
+class Performance:
+    rps: float = 0.0
+    ign: float = 0.0
+    bs: float = 0.0
+    mp: int = 0

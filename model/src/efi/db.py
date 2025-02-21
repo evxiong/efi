@@ -71,6 +71,9 @@ def create():
                     transfermarkt_path VARCHAR,
                     avg_base DOUBLE, -- average base goals scored
                     home_advantage DOUBLE,
+                    transfer_off_slope DOUBLE, -- best fit slope, off transfer z -> avg_gs
+                    transfer_def_slope DOUBLE, -- best fit slope, def transfer z -> avg_ga
+                    transfer_int DOUBLE, -- best fit intercept
                 );
 
             CREATE TABLE IF NOT EXISTS
@@ -207,7 +210,10 @@ def initialize():
                     'transfermarkt_id': 'VARCHAR',
                     'transfermarkt_path': 'VARCHAR',
                     'avg_base': 'DOUBLE',
-                    'home_advantage': 'DOUBLE'
+                    'home_advantage': 'DOUBLE',
+                    'transfer_off_slope': 'DOUBLE',
+                    'transfer_def_slope': 'DOUBLE',
+                    'transfer_int': 'DOUBLE'
                 }
             );
             """
@@ -460,7 +466,9 @@ def get_season_dates(competition_id: int, season: int) -> tuple[date, date]:
     return (results[0][0].date(), results[0][1].date())
 
 
-def get_transfervalues_z(season: int) -> dict[int, tuple[float, float]]:
+def get_transfervalues_z(
+    competition_id: int, season: int
+) -> dict[int, tuple[float, float]]:
     """Gets z-scores of preseason offensive and defensive transfer values.
 
     Returns:
@@ -471,13 +479,13 @@ def get_transfervalues_z(season: int) -> dict[int, tuple[float, float]]:
             """
             SELECT
                 t.club_id,
-                (t.off_value - AVG(t.off_value) OVER (PARTITION BY season)) / STDDEV(t.off_value) OVER (PARTITION BY season) AS z_off,
-                (t.def_value - AVG(t.def_value) OVER (PARTITION BY season)) / STDDEV(t.def_value) OVER (PARTITION BY season) AS z_def
+                (t.off_value - AVG(t.off_value) OVER (PARTITION BY t.season)) / STDDEV(t.off_value) OVER (PARTITION BY t.season) AS z_off,
+                (t.def_value - AVG(t.def_value) OVER (PARTITION BY t.season)) / STDDEV(t.def_value) OVER (PARTITION BY t.season) AS z_def
             FROM transfervalues t
-            JOIN clubs c ON t.club_id = c.id
-            WHERE t.season = ?
+            JOIN clubs_competitions cc ON t.club_id = cc.club_id AND t.season = cc.season
+            WHERE cc.competition_id = ? AND cc.season = ?
             """,
-            [season],
+            [competition_id, season],
         ).fetchall()
     return {r[0]: r[1:] for r in results}
 

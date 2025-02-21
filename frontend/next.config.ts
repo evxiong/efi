@@ -10,6 +10,13 @@ const nextConfig: NextConfig = {
         port: "",
         search: "",
       },
+      {
+        protocol: "https",
+        hostname: "images.fotmob.com",
+        pathname: "/image_resources/logo/teamlogo/*",
+        port: "",
+        search: "",
+      },
     ],
   },
 };

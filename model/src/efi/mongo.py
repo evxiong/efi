@@ -175,4 +175,5 @@ def upsert_all(competition_id: int):
 
 
 if __name__ == "__main__":
-    upsert_all(1)
+    for competition_id in range(1, 6):
+        upsert_all(competition_id)
