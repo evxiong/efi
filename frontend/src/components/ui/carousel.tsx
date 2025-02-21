@@ -100,6 +100,7 @@ const Carousel = React.forwardRef<
       [scrollPrev, scrollNext],
     );
 
+    const nodes = api?.slideNodes();
     React.useEffect(() => {
       if (!api) {
         return;
@@ -115,7 +116,7 @@ const Carousel = React.forwardRef<
           api.scrollTo(snapIndexThatSlideBelongsTo, true);
         }
       }
-    }, [startInd, api?.slideNodes()]);
+    }, [startInd, api, nodes]);
 
     React.useEffect(() => {
       if (!api || !setApi) {
@@ -216,14 +217,13 @@ CarouselItem.displayName = "CarouselItem";
 const CarouselPrevious = React.forwardRef<
   HTMLButtonElement,
   React.ComponentProps<typeof Button>
->(({ className, variant = "outline", size = "icon", ...props }, ref) => {
-  const { orientation, scrollPrev, canScrollPrev } = useCarousel();
+>(({ className, variant = "outline", ...props }, ref) => {
+  const { scrollPrev, canScrollPrev } = useCarousel();
 
   return (
     <Button
       ref={ref}
       variant={variant}
-      // size={size}
       className={cn(
         "h-[66px] w-6 flex-shrink-0 rounded-none border-x bg-gray-50 px-0 disabled:bg-white",
         className,
@@ -242,8 +242,8 @@ CarouselPrevious.displayName = "CarouselPrevious";
 const CarouselNext = React.forwardRef<
   HTMLButtonElement,
   React.ComponentProps<typeof Button>
->(({ className, variant = "outline", size = "icon", ...props }, ref) => {
-  const { orientation, scrollNext, canScrollNext } = useCarousel();
+>(({ className, variant = "outline", ...props }, ref) => {
+  const { scrollNext, canScrollNext } = useCarousel();
 
   return (
     <Button

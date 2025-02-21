@@ -145,9 +145,6 @@ function ScoreboardScore({ score }: { score: Score }) {
   const prob_1_max =
     !score.completed &&
     score.prob_1 === Math.max(score.prob_1, score.prob_2, score.prob_d);
-  const prob_d_max =
-    !score.completed &&
-    score.prob_d === Math.max(score.prob_1, score.prob_2, score.prob_d);
   const prob_2_max =
     !score.completed &&
     score.prob_2 === Math.max(score.prob_1, score.prob_2, score.prob_d);
