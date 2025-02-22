@@ -70,7 +70,7 @@ export default function Navbar() {
                 <div className="relative h-6 w-6">
                   <Image
                     alt={`${league.name} logo`}
-                    src={league.icon_link}
+                    src={`/icons/leagues/${league.id}.png`}
                     fill={true}
                     sizes="50px"
                     draggable={false}
