@@ -125,7 +125,10 @@ export default function RankingsTable({
                   selectedSortKey={selectedSortKey}
                   setSortState={setSortState}
                 />
-                <TableHead className="relative text-center text-gray-900 before:absolute before:left-2 before:top-1/2 before:-translate-y-1/2 before:text-[10px] before:font-normal before:text-gray-500 before:content-['1'] after:absolute after:right-2 after:top-1/2 after:-translate-y-1/2 after:text-[10px] after:font-normal after:text-gray-500 after:content-['20']">
+                <TableHead className="relative text-center text-gray-900">
+                  <div className="absolute left-2 top-1/2 -translate-y-1/2 select-none text-xxs font-normal leading-4 text-gray-500">
+                    {rows.length === 0 ? "" : 1}
+                  </div>
                   <Tooltip>
                     <TooltipTrigger>POS</TooltipTrigger>
                     <TooltipContent>
@@ -136,6 +139,9 @@ export default function RankingsTable({
                       />
                     </TooltipContent>
                   </Tooltip>
+                  <div className="absolute right-2 top-1/2 -translate-y-1/2 select-none text-xxs font-normal leading-4 text-gray-500">
+                    {rows.length === 0 ? "" : rows.length}
+                  </div>
                 </TableHead>
                 <THSortableLargeTooltip
                   width="sm"

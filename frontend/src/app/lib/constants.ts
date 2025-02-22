@@ -42,3 +42,13 @@ export const LEAGUES: Competition[] = [
     country: "France",
   },
 ];
+
+export const RELEGATION: { [key: number]: { [key: number | string]: number } } =
+  // competition id -> "*" for common case, <year> for overrides -> relegation spots
+  {
+    1: { "*": 3 },
+    2: { "*": 3 },
+    3: { "*": 3 },
+    4: { "*": 3 },
+    5: { "*": 3, 2022: 4 },
+  };

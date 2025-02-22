@@ -167,7 +167,10 @@ def sim_from_date(
 
     sim_results: dict[int, SimResults] = {
         cid: SimResults(
-            counts=[0] * 20, total_pts=0, total_gd=0, simulations=simulations
+            counts=[0] * len(clubs_map),
+            total_pts=0,
+            total_gd=0,
+            simulations=simulations,
         )
         for cid in clubs_map.keys()
     }

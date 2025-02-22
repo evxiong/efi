@@ -1,3 +1,4 @@
+import { RELEGATION } from "@/app/lib/constants";
 import { MongoClient } from "mongodb";
 import { NextRequest } from "next/server";
 
@@ -41,6 +42,8 @@ export async function GET(request: NextRequest) {
       },
     );
     if (table) {
+      const relegationSpots =
+        RELEGATION[competition][season] ?? RELEGATION[competition]["*"] ?? 3;
       for (const row of table.rows) {
         row.prob_positions = (row.prob_positions as string[]).map((p) =>
           parseFloat(p),
@@ -52,11 +55,11 @@ export async function GET(request: NextRequest) {
           row.prob_positions[2] +
           row.prob_positions[3]
         ).toFixed(4);
-        row.prob_rel = +(
-          row.prob_positions[17] +
-          row.prob_positions[18] +
-          row.prob_positions[19]
-        ).toFixed(4);
+        let totalProbRel = 0;
+        for (let i = 0; i < relegationSpots; i++) {
+          totalProbRel += row.prob_positions.at(-(i + 1));
+        }
+        row.prob_rel = +totalProbRel.toFixed(4);
       }
     }
     return Response.json(table);
