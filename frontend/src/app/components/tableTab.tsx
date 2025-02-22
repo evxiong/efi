@@ -74,17 +74,14 @@ export default function TableTab({
   const dateString = rows.length > 0 ? rows[0].update_date : "";
   const completedMatches = data ? data.completed_matches : 0;
   const totalMatches = data ? data.total_matches : 0;
+  const ranks = sortedRowsToRanks([...rows], selectedSortKey, sortDesc);
 
   useEffect(() => {
     if (data === undefined) return;
     setRows(
       data === null
         ? []
-        : [...(data.rows as Row[])].sort((a, b) =>
-            sortDesc
-              ? (b[selectedSortKey] as number) - (a[selectedSortKey] as number)
-              : (a[selectedSortKey] as number) - (b[selectedSortKey] as number),
-          ),
+        : sortRows([...(data.rows as Row[])], selectedSortKey, sortDesc),
     );
   }, [selectedSortKey, sortDesc, data]);
 
@@ -193,6 +190,7 @@ export default function TableTab({
 
           <RankingsTable
             rows={rows}
+            ranks={ranks}
             showDetails={showDetails === true}
             loading={matchweek === null || latestIsLoading || isLoading}
             selectedSortKey={selectedSortKey}
@@ -203,4 +201,48 @@ export default function TableTab({
       </section>
     </div>
   );
+}
+
+function sortRows(rows: Row[], sortKey: keyof Row, desc: boolean): Row[] {
+  return sortKey === "pts"
+    ? rows.sort((a, b) =>
+        desc
+          ? b["pts"] - a["pts"] || b["gd"] - a["gd"] || b["gf"] - a["gf"]
+          : a["pts"] - b["pts"] || a["gd"] - b["gd"] || a["gf"] - b["gf"],
+      )
+    : rows.sort((a, b) =>
+        desc
+          ? (b[sortKey] as number) - (a[sortKey] as number)
+          : (a[sortKey] as number) - (b[sortKey] as number),
+      );
+}
+
+function sortedRowsToRanks(
+  rows: Row[],
+  sortKey: keyof Row,
+  desc: boolean,
+): number[] {
+  const ranks: number[] = [];
+  let curRank = 0;
+  let curVal = null;
+  if (!desc) {
+    rows.reverse();
+  }
+  if (sortKey === "def") {
+    rows.reverse();
+  }
+  for (let i = 0; i < rows.length; i++) {
+    if (curVal === null || rows[i][sortKey] !== curVal) {
+      curRank = i + 1;
+      curVal = rows[i][sortKey];
+    }
+    ranks.push(curRank);
+  }
+  if (!desc) {
+    ranks.reverse();
+  }
+  if (sortKey === "def") {
+    ranks.reverse();
+  }
+  return ranks;
 }
