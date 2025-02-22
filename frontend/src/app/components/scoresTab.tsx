@@ -1,6 +1,6 @@
 "use client";
 
-import type { Competition, Score as ScoreType } from "../lib/types";
+import type { Competition, Score as ScoreType, Season } from "../lib/types";
 import Score from "./score";
 import {
   Accordion,
@@ -38,13 +38,22 @@ export default function ScoresTab({
     },
   );
 
-  const matchweeks = [...Array(38)].map(
-    (_, i) => "Matchweek " + (i + 1).toFixed(),
-  );
-  const [matchweek, setMatchweek] = useState<number | null>(null);
-  const seasons: number[] = latest?.latest ? latest.latest.seasons : [];
+  const seasons: number[] = latest?.latest
+    ? latest.latest.seasons.map((s: Season) => s.season)
+    : [];
   const seasonOptions = seasons.map((d) => `${d}/${(d + 1) % 100}`);
+  const [matchweek, setMatchweek] = useState<number | null>(null);
   const [season, setSeason] = useState<number | null>(null);
+
+  const matchweeks: string[] = [
+    ...Array(
+      latest?.latest
+        ? latest.latest.seasons.at(
+            latest.latest.seasons.findIndex((s: Season) => s.season === season),
+          ).matchweeks
+        : 0,
+    ),
+  ].map((_, i) => "Matchweek " + (i + 1).toFixed());
 
   const { data, isLoading } = useSWR(
     `/api/scores?competition=${competition.id}&season=${season}&matchweek=${matchweek}`,
@@ -56,6 +65,12 @@ export default function ScoresTab({
       revalidateIfStale: false,
     },
   );
+
+  useEffect(() => {
+    if (matchweek !== null && matchweek > matchweeks.length) {
+      setMatchweek(matchweeks.length);
+    }
+  }, [season]);
 
   useEffect(() => {
     if (latest === undefined || !latest.latest) return;

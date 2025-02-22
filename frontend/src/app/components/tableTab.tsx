@@ -12,7 +12,7 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select";
-import type { Competition, Row } from "../lib/types";
+import type { Competition, Row, Season } from "../lib/types";
 import { formatDate } from "../lib/utils";
 import useSWR from "swr";
 import { Skeleton } from "@/components/ui/skeleton";
@@ -34,13 +34,22 @@ export default function TableTab({
     revalidateIfStale: false,
   });
 
-  const matchweeks = [...Array(39)].map((_, i) =>
-    i === 0 ? "Preseason" : "Matchweek " + i.toFixed(),
-  );
-  const [matchweek, setMatchweek] = useState<number | null>(null);
-  const seasons: number[] = latest?.latest ? latest.latest.seasons : [];
+  const seasons: number[] = latest?.latest
+    ? latest.latest.seasons.map((s: Season) => s.season)
+    : [];
   const seasonOptions = seasons.map((d) => `${d}/${(d + 1) % 100}`);
+  const [matchweek, setMatchweek] = useState<number | null>(null);
   const [season, setSeason] = useState<number | null>(null);
+
+  const matchweeks: string[] = [
+    ...Array(
+      latest?.latest
+        ? latest.latest.seasons.at(
+            latest.latest.seasons.findIndex((s: Season) => s.season === season),
+          ).matchweeks + 1
+        : 0,
+    ),
+  ].map((_, i) => (i === 0 ? "Preseason" : "Matchweek " + i.toFixed()));
 
   const { data, isLoading } = useSWR(
     `/api/table?competition=${competition.id}&season=${season}&matchweek=${matchweek}`,
@@ -52,6 +61,12 @@ export default function TableTab({
       revalidateIfStale: false,
     },
   );
+
+  useEffect(() => {
+    if (matchweek !== null && matchweek > matchweeks.length - 1) {
+      setMatchweek(matchweeks.length - 1);
+    }
+  }, [season]);
 
   useEffect(() => {
     if (latest === undefined || !latest.latest) return;

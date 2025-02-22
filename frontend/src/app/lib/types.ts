@@ -56,3 +56,8 @@ export interface Row {
   avg_pts: number;
   avg_gd: number;
 }
+
+export interface Season {
+  season: number;
+  matchweeks: number;
+}

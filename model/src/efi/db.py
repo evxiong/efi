@@ -820,9 +820,10 @@ def get_mongo_competition_seasons(competition_id: int) -> pd.DataFrame:
     with duckdb.connect(DB_FILE) as con:
         df = con.execute(
             """
-            SELECT DISTINCT season
+            SELECT season, COUNT(DISTINCT matchweek) AS matchweeks
             FROM matches
             WHERE competition_id = ?
+            GROUP BY season
             ORDER BY season
             """,
             [competition_id],

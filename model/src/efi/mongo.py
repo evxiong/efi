@@ -116,9 +116,10 @@ def prepare_latest(competition_id: int) -> list[UpdateOne]:
     df = db.get_mongo_latest_scores_info(competition_id)
     latest_scores = df.to_dict(orient="records")[0]
 
-    seasons = db.get_mongo_competition_seasons(competition_id)["season"].tolist()
+    df = db.get_mongo_competition_seasons(competition_id)
+    seasons = df.to_dict(orient="records")
 
-    df = db.get_mongo_latest_trends(competition_id, seasons[-1])
+    df = db.get_mongo_latest_trends(competition_id, seasons[-1]["season"])
     t = df.to_dict(orient="records")
     latest_trends = (
         {
