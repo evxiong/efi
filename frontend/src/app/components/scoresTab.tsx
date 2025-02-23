@@ -70,7 +70,7 @@ export default function ScoresTab({
     if (matchweek !== null && matchweek > matchweeks.length) {
       setMatchweek(matchweeks.length);
     }
-  }, [season]);
+  }, [season, matchweek, matchweeks.length]);
 
   useEffect(() => {
     if (latest === undefined || !latest.latest) return;

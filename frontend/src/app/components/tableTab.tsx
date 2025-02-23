@@ -66,7 +66,7 @@ export default function TableTab({
     if (matchweek !== null && matchweek > matchweeks.length - 1) {
       setMatchweek(matchweeks.length - 1);
     }
-  }, [season]);
+  }, [season, matchweek, matchweeks.length]);
 
   useEffect(() => {
     if (latest === undefined || !latest.latest) return;
