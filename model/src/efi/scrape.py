@@ -2,12 +2,13 @@
 Classes to scrape and retrieve data.
 """
 
+import pandas as pd
 import re
 import requests
 import time
 from . import db
-from .data import Match, TransferValue, Event, Club_Competition
-from datetime import datetime, timezone, date, timedelta
+from .data import Match, TransferValue, Event, Club_Competition, IdType
+from datetime import datetime, timezone, timedelta
 from decimal import Decimal, ROUND_HALF_UP
 from lxml import html
 
@@ -126,11 +127,16 @@ class Fotmob:
             f"https://www.fotmob.com/api/leagues?id={competition.fotmob_id}&season={season}/{season+1}"
         )
         data = r.json()
+
+        fotmob_id_to_club = db.get_clubs_by_id_map(
+            IdType.FOTMOB, competition_id, season
+        )
+
         return [
             Club_Competition(
                 season=season,
                 competition_id=competition_id,
-                club_id=db.get_club_by_fotmob_id(str(t["id"])).id,  # type: ignore - returned Club id cannot be None
+                club_id=fotmob_id_to_club[str(t["id"])].id,
             )
             for t in data["table"][0]["data"]["table"]["all"]
         ]
@@ -156,16 +162,59 @@ class Fotmob:
             f"https://www.fotmob.com/api/leagues?id={competition.fotmob_id}&season={season}/{season+1}"
         )
         data = r.json()
+
+        fotmob_id_to_club = db.get_clubs_by_id_map(
+            IdType.FOTMOB, competition_id, season
+        )
         d = {}
         for t in data["table"][0]["data"]["table"]["all"]:
-            club = db.get_club_by_fotmob_id(str(t["id"]))
-            if club is None:
+            fotmob_id = str(t["id"])
+            if fotmob_id not in fotmob_id_to_club:
                 # club is not in database
                 continue
             mp = t["played"]
             gs, ga = [int(v) for v in t["scoresStr"].split("-")]
-            d[club.id] = (gs / mp, ga / mp)
+            d[fotmob_id_to_club[fotmob_id].id] = (gs / mp, ga / mp)
         return d
+
+    def get_home_advantage(self, competition_id: int) -> pd.DataFrame:
+        competition = db.get_competition_by_id(competition_id)
+        if competition is None:
+            raise ValueError(
+                f"Invalid competition id: {competition_id} is not in database"
+            )
+        stats = []
+        for season in range(2014, 2024):
+            r = self.session.get(
+                f"https://www.fotmob.com/api/leagues?id={competition.fotmob_id}&season={season}/{season+1}"
+            )
+            data = r.json()
+
+            total_home_gs = 0
+            total_away_gs = 0
+            total_mp = 0
+            for t in data["table"][0]["data"]["table"]["home"]:
+                total_home_gs += int(t["scoresStr"].split("-")[0])
+                total_away_gs += int(t["scoresStr"].split("-")[1])
+                total_mp += t["played"]
+            avg_home_gs = total_home_gs / total_mp
+            avg_away_gs = total_away_gs / total_mp
+            avg_gs = (total_home_gs + total_away_gs) / (2 * total_mp)
+            stats.append(
+                (
+                    season,
+                    avg_home_gs,
+                    avg_away_gs,
+                    avg_gs,
+                    avg_home_gs - avg_gs,
+                    total_mp,
+                )
+            )
+
+        return pd.DataFrame(
+            stats,
+            columns=["season", "avg_home_gs", "avg_away_gs", "avg_gs", "ha", "mp"],
+        )
 
     def get_all_matches(self, competition_id: int, season: int) -> list[Match]:
         """Gets all matches in given competition and season.
@@ -186,6 +235,11 @@ class Fotmob:
             f"https://www.fotmob.com/api/leagues?id={competition.fotmob_id}&season={season}/{season+1}",
         )
         data = r.json()
+
+        fotmob_id_to_club = db.get_clubs_by_id_map(
+            IdType.FOTMOB, competition_id, season
+        )
+
         return [
             Match(
                 competition_id=competition_id,
@@ -194,12 +248,13 @@ class Fotmob:
                 time=self.__fotmob_timestamp_to_datetime(m["status"]["utcTime"]),
                 completed=m["status"]["finished"],
                 neutral=False,
-                club_id_1=db.get_club_by_fotmob_id(m["home"]["id"]).id,  # type: ignore - returned Club id cannot be None
-                club_id_2=db.get_club_by_fotmob_id(m["away"]["id"]).id,  # type: ignore - returned Club id cannot be None
+                club_id_1=fotmob_id_to_club[m["home"]["id"]].id,
+                club_id_2=fotmob_id_to_club[m["away"]["id"]].id,
                 fotmob_id=m["id"],
             )
             for m in data["matches"]["allMatches"]
-            if not m["status"]["cancelled"]
+            # if not m["status"]["cancelled"] and isinstance(m["roundName"], int)
+            if isinstance(m["roundName"], int)
         ]
 
     # def get_home_table(self, season: int, fotmob_competition_id: int = 47):
@@ -380,18 +435,20 @@ class FBref:
             timeout=10,
         )
         doc = html.document_fromstring(r.text)
+
+        fbref_id_to_club = db.get_clubs_by_id_map(IdType.FBREF, competition_id, season)
         for tr in doc.xpath(
             f"//table[@id='results{season}-{season+1}91_overall']/tbody/tr"
         ):
             link = tr.xpath("./td[@data-stat='team']/a/@href")[0]
-            club = db.get_club_by_fbref_id(link.split("/")[3])
-            if club is None:
+            fbref_id = link.split("/")[3]
+            if fbref_id not in fbref_id_to_club:
                 # club is not in database
                 continue
             mp = int(tr.xpath("./td[@data-stat='games']")[0].text)
             gs = int(tr.xpath("./td[@data-stat='goals_for']")[0].text)
             ga = int(tr.xpath("./td[@data-stat='goals_against']")[0].text)
-            res[club.id] = (gs / mp, ga / mp)
+            res[fbref_id_to_club[fbref_id].id] = (gs / mp, ga / mp)
         return res
 
     def get_all_matches(
@@ -420,10 +477,18 @@ class FBref:
         doc = html.document_fromstring(r.text)
 
         matches: list[Match] = []
+        fbref_id_to_club = db.get_clubs_by_id_map(IdType.FBREF, competition_id, season)
 
-        for tr in doc.xpath("//tbody/tr[not(contains(@class, 'spacer'))]"):
+        for tr in doc.xpath(
+            f"//table[@id='sched_{season}-{season+1}_{competition.fbref_id}_1']/tbody/tr[not(contains(@class,'spacer')) and not(contains(@class,'thead'))]"
+        ):
+            cancelled = (
+                tr.xpath("./td[@data-stat='notes']")[0].text == "Match Cancelled"
+            )
             link = tr.xpath("./td[@data-stat='match_report']/a")[0]
-            matchweek = int(tr.xpath("./*[@data-stat='gameweek']")[0].text)
+            matchweek = int(
+                tr.xpath("./*[@data-stat='gameweek' and @scope='row']")[0].text
+            )
             time = datetime.fromtimestamp(
                 (
                     int(
@@ -449,10 +514,10 @@ class FBref:
                     season=season,
                     matchweek=matchweek,
                     time=time,
-                    completed=True,
+                    completed=not cancelled,
                     neutral=False,
-                    club_id_1=db.get_club_by_fbref_id(club_id_1).id,  # type: ignore - returned Club id cannot be None
-                    club_id_2=db.get_club_by_fbref_id(club_id_2).id,  # type: ignore - returned Club id cannot be None
+                    club_id_1=fbref_id_to_club[club_id_1].id,
+                    club_id_2=fbref_id_to_club[club_id_2].id,
                     fbref_id=link.get("href").split("/")[3],
                 )
             else:
@@ -463,8 +528,8 @@ class FBref:
                     time=time,
                     completed=False,
                     neutral=False,
-                    club_id_1=db.get_club_by_fbref_id(club_id_1).id,  # type: ignore - returned Club id cannot be None
-                    club_id_2=db.get_club_by_fbref_id(club_id_2).id,  # type: ignore - returned Club id cannot be None
+                    club_id_1=fbref_id_to_club[club_id_1].id,
+                    club_id_2=fbref_id_to_club[club_id_2].id,
                 )
 
             matches.append(m)
@@ -609,6 +674,7 @@ class PremierLeague:
         data = r.json()
 
         network_matches: list[Match] = []
+        official_id_to_club = db.get_clubs_by_id_map(IdType.OFFICIAL, 1, season)
 
         for f in data["content"]:
             network = None
@@ -625,12 +691,12 @@ class PremierLeague:
                     competition_id=1,
                     season=season,
                     matchweek=f["fixture"]["gameweek"]["gameweek"],
-                    club_id_1=db.get_club_by_official_id(
+                    club_id_1=official_id_to_club[
                         str(f["fixture"]["teams"][0]["team"]["id"])
-                    ).id,  # type: ignore - returned Club id cannot be None
-                    club_id_2=db.get_club_by_official_id(
+                    ].id,
+                    club_id_2=official_id_to_club[
                         str(f["fixture"]["teams"][1]["team"]["id"])
-                    ).id,  # type: ignore - returned Club id cannot be None
+                    ].id,
                     network=network,
                     time=datetime.now(),  # irrelevant for update
                     completed=False,  # irrelevant for update

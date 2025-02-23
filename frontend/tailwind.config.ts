@@ -10,6 +10,7 @@ export default {
   theme: {
     extend: {
       fontSize: {
+        xxs: ["0.625rem", "0.75rem"],
         ss: ["0.8125rem", "1rem"],
       },
       fontFamily: {

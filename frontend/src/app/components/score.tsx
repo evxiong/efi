@@ -1,5 +1,5 @@
 import Image from "next/image";
-import type { Score } from "../data/scoreData";
+import type { Score } from "../lib/types";
 
 export default function Score({
   score,
@@ -64,10 +64,9 @@ export default function Score({
                   sizes="50px"
                   fill={true}
                   draggable={false}
-                  className="flex-shrink-0 select-none"
+                  className="flex-shrink-0 select-none object-contain"
                 />
               </div>
-
               <span>{score.club_1}</span>
             </div>
             <div>{score.score_1}</div>
@@ -86,7 +85,7 @@ export default function Score({
                   sizes="50px"
                   fill={true}
                   draggable={false}
-                  className="flex-shrink-0 select-none"
+                  className="flex-shrink-0 select-none object-contain"
                 />
               </div>
               <span>{score.club_2}</span>

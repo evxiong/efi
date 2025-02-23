@@ -12,34 +12,47 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select";
-import { Row } from "../data/tableData";
-import { dateStringToFormattedDate } from "../lib/utils";
+import type { Competition, Row, Season } from "../lib/types";
+import { formatDate } from "../lib/utils";
 import useSWR from "swr";
 import { Skeleton } from "@/components/ui/skeleton";
 
-export default function TableTab() {
+export default function TableTab({
+  competition,
+}: {
+  competition: Competition;
+}) {
   const fetcher = (url: string) => fetch(url).then((r) => r.json());
   const {
     data: latest,
     isLoading: latestIsLoading,
     mutate: mutateLatest,
-  } = useSWR("/api/latest", fetcher, {
+  } = useSWR(`/api/latest?competition=${competition.id}`, fetcher, {
     revalidateOnFocus: false,
     revalidateOnMount: false,
     revalidateOnReconnect: false,
     revalidateIfStale: false,
   });
 
-  const matchweeks = [...Array(39)].map((_, i) =>
-    i == 0 ? "Preseason" : "Matchweek " + i.toFixed(),
-  );
-  const [matchweek, setMatchweek] = useState<number | null>(null);
-  const seasons: number[] = latest ? latest.latest.seasons : [];
+  const seasons: number[] = latest?.latest
+    ? latest.latest.seasons.map((s: Season) => s.season)
+    : [];
   const seasonOptions = seasons.map((d) => `${d}/${(d + 1) % 100}`);
+  const [matchweek, setMatchweek] = useState<number | null>(null);
   const [season, setSeason] = useState<number | null>(null);
 
+  const matchweeks: string[] = [
+    ...Array(
+      latest?.latest
+        ? latest.latest.seasons.at(
+            latest.latest.seasons.findIndex((s: Season) => s.season === season),
+          ).matchweeks + 1
+        : 0,
+    ),
+  ].map((_, i) => (i === 0 ? "Preseason" : "Matchweek " + i.toFixed()));
+
   const { data, isLoading } = useSWR(
-    `/api/table?matchweek=${matchweek}&season=${season}`,
+    `/api/table?competition=${competition.id}&season=${season}&matchweek=${matchweek}`,
     fetcher,
     {
       revalidateOnFocus: false,
@@ -50,9 +63,15 @@ export default function TableTab() {
   );
 
   useEffect(() => {
-    if (latest === undefined) return;
-    setMatchweek(latest.latest.table.matchweek);
-    setSeason(latest.latest.table.season);
+    if (matchweek !== null && matchweek > matchweeks.length - 1) {
+      setMatchweek(matchweeks.length - 1);
+    }
+  }, [season, matchweek, matchweeks.length]);
+
+  useEffect(() => {
+    if (latest === undefined || !latest.latest) return;
+    setMatchweek(latest.latest?.table.matchweek);
+    setSeason(latest.latest?.table.season);
   }, [latest]);
 
   useEffect(() => {
@@ -70,17 +89,14 @@ export default function TableTab() {
   const dateString = rows.length > 0 ? rows[0].update_date : "";
   const completedMatches = data ? data.completed_matches : 0;
   const totalMatches = data ? data.total_matches : 0;
+  const ranks = sortedRowsToRanks([...rows], selectedSortKey, sortDesc);
 
   useEffect(() => {
     if (data === undefined) return;
     setRows(
       data === null
         ? []
-        : [...(data.rows as Row[])].sort((a, b) =>
-            sortDesc
-              ? (b[selectedSortKey] as number) - (a[selectedSortKey] as number)
-              : (a[selectedSortKey] as number) - (b[selectedSortKey] as number),
-          ),
+        : sortRows([...(data.rows as Row[])], selectedSortKey, sortDesc),
     );
   }, [selectedSortKey, sortDesc, data]);
 
@@ -94,7 +110,7 @@ export default function TableTab() {
   return (
     <div className="flex w-full flex-col">
       <section className="mx-auto flex w-full max-w-7xl px-4 sm:px-6">
-        <div className="mb-40 flex w-full flex-col gap-4 pt-2">
+        <div className="mb-20 flex w-full flex-col gap-4 pt-2">
           <div className="flex flex-col gap-6">
             <div className="flex flex-col justify-between gap-4 md:flex-row md:items-center">
               <div className="flex flex-row gap-2.5">
@@ -149,7 +165,7 @@ export default function TableTab() {
                 ) : (
                   <p className="font-semibold">
                     {rows && dateString
-                      ? `Rankings as of ${dateStringToFormattedDate(dateString)}`
+                      ? `Rankings as of ${formatDate(dateString)}`
                       : `No matches have been played in Matchweek ${matchweek}.`}
                   </p>
                 )}
@@ -161,7 +177,7 @@ export default function TableTab() {
                       ? matchweek === 0
                         ? "Preseason rankings"
                         : `Includes ${completedMatches} of ${totalMatches} matches played in Matchweek ${matchweek}.`
-                      : "Rankings update daily around midnight London time."}
+                      : "Rankings update daily around midnight UTC."}
                   </p>
                 )}
               </div>
@@ -189,6 +205,7 @@ export default function TableTab() {
 
           <RankingsTable
             rows={rows}
+            ranks={ranks}
             showDetails={showDetails === true}
             loading={matchweek === null || latestIsLoading || isLoading}
             selectedSortKey={selectedSortKey}
@@ -199,4 +216,48 @@ export default function TableTab() {
       </section>
     </div>
   );
+}
+
+function sortRows(rows: Row[], sortKey: keyof Row, desc: boolean): Row[] {
+  return sortKey === "pts"
+    ? rows.sort((a, b) =>
+        desc
+          ? b["pts"] - a["pts"] || b["gd"] - a["gd"] || b["gf"] - a["gf"]
+          : a["pts"] - b["pts"] || a["gd"] - b["gd"] || a["gf"] - b["gf"],
+      )
+    : rows.sort((a, b) =>
+        desc
+          ? (b[sortKey] as number) - (a[sortKey] as number)
+          : (a[sortKey] as number) - (b[sortKey] as number),
+      );
+}
+
+function sortedRowsToRanks(
+  rows: Row[],
+  sortKey: keyof Row,
+  desc: boolean,
+): number[] {
+  const ranks: number[] = [];
+  let curRank = 0;
+  let curVal = null;
+  if (!desc) {
+    rows.reverse();
+  }
+  if (sortKey === "def") {
+    rows.reverse();
+  }
+  for (let i = 0; i < rows.length; i++) {
+    if (curVal === null || rows[i][sortKey] !== curVal) {
+      curRank = i + 1;
+      curVal = rows[i][sortKey];
+    }
+    ranks.push(curRank);
+  }
+  if (!desc) {
+    ranks.reverse();
+  }
+  if (sortKey === "def") {
+    ranks.reverse();
+  }
+  return ranks;
 }

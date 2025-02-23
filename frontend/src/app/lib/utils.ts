@@ -4,7 +4,10 @@ export function numberToOrdinal(n: number) {
   return n + (suffixes[(v - 20) % 10] || suffixes[v] || suffixes[0]);
 }
 
-export function dateStringToFormattedDate(dateString: string) {
+export function formatDate(
+  dateString: string | Date,
+  includeYear: boolean = true,
+) {
   const date = new Date(dateString);
   const months = [
     "Jan.",
@@ -20,5 +23,22 @@ export function dateStringToFormattedDate(dateString: string) {
     "Nov.",
     "Dec.",
   ];
-  return `${months[date.getUTCMonth()]} ${date.getUTCDate()}, ${date.getUTCFullYear()}`;
+  return includeYear
+    ? `${months[date.getUTCMonth()]} ${date.getUTCDate()}, ${date.getUTCFullYear()}`
+    : `${months[date.getUTCMonth()]} ${date.getUTCDate()}`;
+}
+
+export function formatTime(date: Date) {
+  const formatted = date
+    .toLocaleTimeString([], {
+      weekday: "short",
+      hour: "numeric",
+      minute: "2-digit",
+    })
+    .replace(" PM", "pm")
+    .replace(" AM", "am");
+  if (!formatted.includes(",")) {
+    return formatted.replace(" ", ", ");
+  }
+  return formatted;
 }

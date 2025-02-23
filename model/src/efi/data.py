@@ -1,11 +1,20 @@
 """
-Dataclass definitions.
+Dataclass and enum definitions.
 """
 
 from collections import deque
 from dataclasses import dataclass
 from datetime import datetime, date
 from decimal import Decimal
+from enum import Enum
+
+
+class IdType(Enum):
+    # name -> col index in clubs table
+    OFFICIAL = 6
+    FOTMOB = 7
+    FBREF = 8
+    TRANSFERMARKT = 9
 
 
 @dataclass(kw_only=True)
@@ -131,6 +140,9 @@ class Competition:
     transfermarkt_path: str
     avg_base: float | None
     home_advantage: float | None
+    transfer_int: float | None
+    transfer_off_slope: float | None
+    transfer_def_slope: float | None
 
 
 @dataclass
@@ -160,3 +172,11 @@ class Event:
     team: int  # 0 for home, 1 for away
     type: str  # "Goal" or "Card"
     minute: int
+
+
+@dataclass
+class Performance:
+    rps: float = 0.0
+    ign: float = 0.0
+    bs: float = 0.0
+    mp: int = 0

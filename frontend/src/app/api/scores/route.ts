@@ -1,4 +1,4 @@
-import { Score } from "@/app/data/scoreData";
+import { Score } from "@/app/lib/types";
 import { MongoClient } from "mongodb";
 import { NextRequest } from "next/server";
 
@@ -8,12 +8,13 @@ export async function GET(request: NextRequest) {
   // Get all matches between first match of given matchweek and following matchweek,
   // as well as any matches belonging to this matchweek.
   const searchParams = request.nextUrl.searchParams;
+  const competition = parseInt(searchParams.get("competition")!);
   const season = parseInt(searchParams.get("season")!);
   const matchweek = parseInt(searchParams.get("matchweek")!);
 
-  if (isNaN(season) || isNaN(matchweek)) {
+  if (isNaN(competition) || isNaN(season) || isNaN(matchweek)) {
     return new Response(
-      "Error: both season and matchweek must be specified in /api/scores",
+      "Error: competition, season, and matchweek must be specified in /api/scores",
       {
         status: 400,
       },
@@ -28,9 +29,9 @@ export async function GET(request: NextRequest) {
     const cursor = scores.find(
       {
         $or: [
-          { competition_id: 1, season: season, matchweek: matchweek },
+          { competition_id: competition, season: season, matchweek: matchweek },
           {
-            competition_id: 1,
+            competition_id: competition,
             season: season,
             "scores.display_with_matchweek": matchweek,
           },

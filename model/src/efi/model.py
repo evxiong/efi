@@ -5,8 +5,7 @@ Model functions.
 import copy
 import csv
 import numpy as np
-from . import db
-from . import scrape
+from . import db, scoring, scrape
 from .data import (
     TableSnapshot,
     ClubSnapshot,
@@ -15,6 +14,7 @@ from .data import (
     SimTableSnapshot,
     SimClubSnapshot,
     SimResults,
+    Performance,
 )
 from collections import defaultdict, deque
 from datetime import date, datetime, timedelta
@@ -167,7 +167,10 @@ def sim_from_date(
 
     sim_results: dict[int, SimResults] = {
         cid: SimResults(
-            counts=[0] * 20, total_pts=0, total_gd=0, simulations=simulations
+            counts=[0] * len(clubs_map),
+            total_pts=0,
+            total_gd=0,
+            simulations=simulations,
         )
         for cid in clubs_map.keys()
     }
@@ -197,6 +200,7 @@ def run_seasons(
     end: int,
     save: bool = False,
     sim: bool = False,
+    performance: bool = False,
 ):
     """Computes predictions and ratings for each match.
 
@@ -209,15 +213,28 @@ def run_seasons(
             False.
         sim (bool, optional): if True, run projections after each matchweek.
             Defaults to False.
+        performance (bool, optional): if True, print model performance after
+            running all seasons. Defaults to False.
     """
     # get avg_base and home_advantage from database
     competition = db.get_competition_by_id(competition_id)
     if competition is None:
         raise ValueError(f"Invalid competition id: {competition_id} is not in database")
-    if competition.avg_base is None or competition.home_advantage is None:
-        raise Exception(f"{competition.name} is missing avg_base or home_advantage")
+    if (
+        competition.avg_base is None
+        or competition.home_advantage is None
+        or competition.transfer_off_slope is None
+        or competition.transfer_def_slope is None
+        or competition.transfer_int is None
+    ):
+        raise Exception(
+            f"{competition.name} is missing one or more of the following fields: avg_base, home_advantage, transfer_off_slope, transfer_def_slope, transfer_int"
+        )
     AVG_BASE = competition.avg_base
     HOME_ADVANTAGE = competition.home_advantage
+    TRANSFER_OFF_SLOPE = competition.transfer_off_slope
+    TRANSFER_DEF_SLOPE = competition.transfer_def_slope
+    TRANSFER_INT = competition.transfer_int
 
     # get deductions from csv file
     deductions = read_deductions_csv()
@@ -226,6 +243,9 @@ def run_seasons(
     history: list[TableSnapshot] = []  # for db insertion
     match_predictions_performances: list[Match] = []  # for db insertion
     projections: list[Projection] = []  # for db insertion
+
+    # model performance
+    P = Performance()
 
     for i, season in enumerate(range(start, end)):
         clubs = db.get_clubs(competition_id, season)
@@ -236,7 +256,7 @@ def run_seasons(
             if club_id not in current_club_ids:
                 del table_map[club_id]
 
-        preseason_zs = db.get_transfervalues_z(season)
+        preseason_zs = db.get_transfervalues_z(competition_id, season)
 
         previous_avgs = {}
         if i == 0:
@@ -255,11 +275,15 @@ def run_seasons(
 
             zs = preseason_zs[club.id]
             if avgs:
-                starting_off = avgs[0] * (2 / 3) + (0.3859 * zs[0] + 1.419) * (1 / 3)
-                starting_def = avgs[1] * (2 / 3) + (-0.2278 * zs[1] + 1.419) * (1 / 3)
+                starting_off = avgs[0] * (2 / 3) + (
+                    TRANSFER_OFF_SLOPE * zs[0] + TRANSFER_INT
+                ) * (1 / 3)
+                starting_def = avgs[1] * (2 / 3) + (
+                    TRANSFER_DEF_SLOPE * zs[1] + TRANSFER_INT
+                ) * (1 / 3)
             else:
-                starting_off = 0.3859 * zs[0] + 1.419
-                starting_def = -0.2278 * zs[1] + 1.419
+                starting_off = TRANSFER_OFF_SLOPE * zs[0] + TRANSFER_INT
+                starting_def = TRANSFER_DEF_SLOPE * zs[1] + TRANSFER_INT
 
             clubs_map[club.id] = ClubSnapshot(
                 name=club.name,
@@ -392,6 +416,21 @@ def run_seasons(
                 HOME_ADVANTAGE,
             )
 
+            # update model performance
+            if m.score_1 is None or m.score_2 is None:
+                raise Exception(f"Match with id {m.id} is missing scores.")
+            probs = [prob_1, prob_d, prob_2]
+            outcome = (
+                [1, 0, 0]
+                if m.score_1 > m.score_2
+                else [0, 0, 1] if m.score_1 < m.score_2 else [0, 1, 0]
+            )
+            P.rps += scoring.compute_rps(probs, outcome)
+            P.ign += scoring.compute_ign(probs, outcome)
+            P.bs += scoring.compute_bs(probs, outcome)
+            P.mp += 1
+
+            # update clubs map
             clubs_map[club_id_1].mp_off.appendleft(mp_off_1)
             clubs_map[club_id_1].mp_def.appendleft(mp_def_1)
             clubs_map[club_id_2].mp_off.appendleft(mp_off_2)
@@ -435,9 +474,6 @@ def run_seasons(
                     mp_def_2=mp_def_2,
                 )
             )
-
-            if m.score_1 is None or m.score_2 is None:
-                raise Exception(f"Match with id {m.id} is missing scores.")
 
             # update table_map
             match_date = m.time.date()
@@ -524,6 +560,12 @@ def run_seasons(
                 table_map[k].gd,
             )
         print()
+
+    if performance:
+        print(f"Model performance ({P.mp} matches):")
+        print("avg rps:", P.rps / P.mp)
+        print("avg ign:", P.ign / P.mp)
+        print("avg bs:", P.bs / P.mp)
 
     if save:
         db.update_matches_predictions(match_predictions_performances)

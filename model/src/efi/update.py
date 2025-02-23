@@ -235,7 +235,8 @@ def update_display_matchweeks(competition_id: int, season: int):
     for m in matches:
         if m.matchweek == current_matchweek + 1 or (
             # mw 7 was postponed in 2022
-            season == 2022
+            competition_id == 1
+            and season == 2022
             and m.matchweek == 8
             and m.matchweek > current_matchweek
         ):
@@ -275,6 +276,8 @@ def update(competition_id: int, season: int):
         raise Exception(f"{competition.name} is missing avg_base or home_advantage")
     AVG_BASE = competition.avg_base
     HOME_ADVANTAGE = competition.home_advantage
+
+    print(competition.name)
 
     F = scrape.Fotmob()
     all_matches = F.get_all_matches(competition_id, season)
@@ -349,31 +352,39 @@ def update(competition_id: int, season: int):
                     )
                 )
 
-        # Update match stats, performance, and history table
-        if m.fotmob_id is not None:  # always the case
-            # get Match with match stats
-            # add match performance to Match
-            # update stats, performance, and history
-            updated_match = run_match_performance(
-                F.get_completed_match_stats(competition_id, season, m.fotmob_id),
-                AVG_BASE,
-                HOME_ADVANTAGE,
+        if m.fotmob_id is None:
+            raise Exception("FotMob match in new_completed_matches has no id:", m)
+
+        # Get corresponding match in db
+        db_m = db.get_match_by_fotmob_id(m.fotmob_id)
+        if db_m is None:
+            raise Exception(
+                "FotMob match in new_completed_matches does not have corresponding match in database:",
+                m,
             )
 
-            old_snapshots: list[TableSnapshot] = []
-            for club_id in [updated_match.club_id_1, updated_match.club_id_2]:
-                old_snapshots.append(
-                    db.get_history_latest_table_snapshot(
-                        club_id, competition_id, season
-                    )
-                )
+        # Update match stats, performance, and history table
+        # get Match with match stats
+        # add match performance to Match
+        # update stats, performance, and history
+        updated_match = run_match_performance(
+            F.get_completed_match_stats(competition_id, season, m.fotmob_id),
+            AVG_BASE,
+            HOME_ADVANTAGE,
+        )
 
-            # mark match as completed and write stats, match performances
-            db.update_matches_stats([updated_match])
-            db.update_matches_performances([updated_match])
-            update_history(competition_id, season, updated_match, *old_snapshots)
+        old_snapshots: list[TableSnapshot] = []
+        for club_id in [updated_match.club_id_1, updated_match.club_id_2]:
+            old_snapshots.append(
+                db.get_history_latest_table_snapshot(club_id, competition_id, season)
+            )
 
-        current_matchweek = m.display_with_matchweek
+        # mark match as completed and write stats, match performances
+        db.update_matches_stats([updated_match])
+        db.update_matches_performances([updated_match])
+        update_history(competition_id, season, updated_match, *old_snapshots)
+
+        current_matchweek = db_m.display_with_matchweek
         current_match_date = m.time.date()
 
     # Always update end-of-season projections after all newly completed matches
@@ -429,7 +440,8 @@ def update(competition_id: int, season: int):
 
 if __name__ == "__main__":
     try:
-        update(1, 2024)
+        for competition_id in range(1, 6):
+            update(competition_id, 2024)
         with open("log.txt", "a+") as fd:
             fd.write(f"{datetime.now(timezone.utc).strftime("%Y-%m-%dT%H:%M:%SZ")}\n")
     except Exception as e:

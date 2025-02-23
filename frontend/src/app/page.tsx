@@ -1,5 +1,5 @@
-import TableTab from "./components/tableTab";
+import { redirect } from "next/navigation";
 
 export default async function Home() {
-  return <TableTab />;
+  redirect("/premier-league");
 }

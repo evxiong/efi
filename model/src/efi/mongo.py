@@ -112,9 +112,23 @@ def prepare_latest(competition_id: int) -> list[UpdateOne]:
     """
     df = db.get_mongo_latest_table_info(competition_id)
     latest_table = df.to_dict(orient="records")[0]
+
     df = db.get_mongo_latest_scores_info(competition_id)
     latest_scores = df.to_dict(orient="records")[0]
-    seasons = db.get_mongo_competition_seasons(competition_id)["season"].tolist()
+
+    df = db.get_mongo_competition_seasons(competition_id)
+    seasons = df.to_dict(orient="records")
+
+    df = db.get_mongo_latest_trends(competition_id, seasons[-1]["season"])
+    t = df.to_dict(orient="records")
+    latest_trends = (
+        {
+            "up": t[0],
+            "down": t[1],
+        }
+        if len(t) == 2
+        else None
+    )
 
     return [
         UpdateOne(
@@ -125,6 +139,7 @@ def prepare_latest(competition_id: int) -> list[UpdateOne]:
                     "table": latest_table,
                     "scores": latest_scores,
                     "seasons": seasons,
+                    "trends": latest_trends,
                 }
             },
             upsert=True,
@@ -161,4 +176,5 @@ def upsert_all(competition_id: int):
 
 
 if __name__ == "__main__":
-    upsert_all(1)
+    for competition_id in range(1, 6):
+        upsert_all(competition_id)

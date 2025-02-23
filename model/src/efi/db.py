@@ -18,9 +18,10 @@ from .data import (
     Club,
     TransferValue,
     Club_Competition,
+    IdType,
 )
 from collections import deque
-from datetime import datetime, date
+from datetime import date
 
 DB_FILE = "efi.db"
 
@@ -71,6 +72,9 @@ def create():
                     transfermarkt_path VARCHAR,
                     avg_base DOUBLE, -- average base goals scored
                     home_advantage DOUBLE,
+                    transfer_off_slope DOUBLE, -- best fit slope, off transfer z -> avg_gs
+                    transfer_def_slope DOUBLE, -- best fit slope, def transfer z -> avg_ga
+                    transfer_int DOUBLE, -- best fit intercept
                 );
 
             CREATE TABLE IF NOT EXISTS
@@ -207,7 +211,10 @@ def initialize():
                     'transfermarkt_id': 'VARCHAR',
                     'transfermarkt_path': 'VARCHAR',
                     'avg_base': 'DOUBLE',
-                    'home_advantage': 'DOUBLE'
+                    'home_advantage': 'DOUBLE',
+                    'transfer_off_slope': 'DOUBLE',
+                    'transfer_def_slope': 'DOUBLE',
+                    'transfer_int': 'DOUBLE'
                 }
             );
             """
@@ -335,6 +342,22 @@ def get_clubs(competition_id: int, season: int) -> list[Club]:
     return [Club(*r) for r in results]
 
 
+def get_clubs_by_id_map(
+    id: IdType, competition_id: int, season: int
+) -> dict[str, Club]:
+    with duckdb.connect(DB_FILE) as con:
+        results = con.execute(
+            """
+            SELECT c.*
+            FROM clubs c
+            JOIN clubs_competitions cc ON cc.club_id = c.id
+            WHERE cc.competition_id = ? AND cc.season = ? 
+            """,
+            [competition_id, season],
+        ).fetchall()
+    return {r[id.value]: Club(*(r)) for r in results}
+
+
 def get_club_by_fotmob_id(fotmob_id: str) -> Club | None:
     with duckdb.connect(DB_FILE) as con:
         results = con.execute(
@@ -460,7 +483,9 @@ def get_season_dates(competition_id: int, season: int) -> tuple[date, date]:
     return (results[0][0].date(), results[0][1].date())
 
 
-def get_transfervalues_z(season: int) -> dict[int, tuple[float, float]]:
+def get_transfervalues_z(
+    competition_id: int, season: int
+) -> dict[int, tuple[float, float]]:
     """Gets z-scores of preseason offensive and defensive transfer values.
 
     Returns:
@@ -471,13 +496,13 @@ def get_transfervalues_z(season: int) -> dict[int, tuple[float, float]]:
             """
             SELECT
                 t.club_id,
-                (t.off_value - AVG(t.off_value) OVER (PARTITION BY season)) / STDDEV(t.off_value) OVER (PARTITION BY season) AS z_off,
-                (t.def_value - AVG(t.def_value) OVER (PARTITION BY season)) / STDDEV(t.def_value) OVER (PARTITION BY season) AS z_def
+                (t.off_value - AVG(t.off_value) OVER (PARTITION BY t.season)) / STDDEV(t.off_value) OVER (PARTITION BY t.season) AS z_off,
+                (t.def_value - AVG(t.def_value) OVER (PARTITION BY t.season)) / STDDEV(t.def_value) OVER (PARTITION BY t.season) AS z_def
             FROM transfervalues t
-            JOIN clubs c ON t.club_id = c.id
-            WHERE t.season = ?
+            JOIN clubs_competitions cc ON t.club_id = cc.club_id AND t.season = cc.season
+            WHERE cc.competition_id = ? AND cc.season = ?
             """,
-            [season],
+            [competition_id, season],
         ).fetchall()
     return {r[0]: r[1:] for r in results}
 
@@ -717,6 +742,8 @@ def get_mongo_scores(competition_id: int, season: int | None = None) -> pd.DataF
                 m.completed,
                 c1.short_name AS club_1,
                 c2.short_name AS club_2,
+                c1.abbrev AS club_1_abbrev,
+                c2.abbrev AS club_2_abbrev,
                 m.score_1,
                 m.score_2,
                 m.prob_1,
@@ -767,13 +794,53 @@ def get_mongo_latest_scores_info(competition_id: int) -> pd.DataFrame:
     return df
 
 
+def get_mongo_latest_trends(competition_id: int, season: int) -> pd.DataFrame:
+    with duckdb.connect(DB_FILE) as con:
+        df = con.execute(
+            """
+            -- Get clubs with largest increase and decrease in EFI over
+            -- their 4 latest matches in given competition and season.
+            WITH cte AS (
+                SELECT
+                    c.short_name, 
+                    c.icon_link,
+                    ARRAY_AGG(efi ORDER BY m.time DESC)[1] - ARRAY_AGG(efi ORDER BY m.time DESC)[5] AS change,
+                    ARRAY_AGG(efi ORDER BY m.time DESC)[1] AS current
+                FROM history h
+                LEFT JOIN matches m ON h.match_id = m.id
+                JOIN clubs c ON h.club_id = c.id
+                WHERE h.competition_id = ? AND h.season = ?
+                GROUP BY h.club_id, c.short_name, c.icon_link
+                HAVING change IS NOT NULL
+            )
+            (
+                SELECT *
+                FROM cte
+                ORDER BY change DESC
+                LIMIT 1
+            )
+            UNION
+            (
+                SELECT *
+                FROM cte
+                ORDER BY change ASC 
+                LIMIT 1
+            )
+            ORDER BY change DESC
+            """,
+            [competition_id, season],
+        ).df()
+    return df
+
+
 def get_mongo_competition_seasons(competition_id: int) -> pd.DataFrame:
     with duckdb.connect(DB_FILE) as con:
         df = con.execute(
             """
-            SELECT DISTINCT season
+            SELECT season, COUNT(DISTINCT matchweek) AS matchweeks
             FROM matches
             WHERE competition_id = ?
+            GROUP BY season
             ORDER BY season
             """,
             [competition_id],

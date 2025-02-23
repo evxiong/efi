@@ -15,7 +15,7 @@ import {
   IconChevronUp,
   IconEqual,
 } from "@tabler/icons-react";
-import type { Row } from "../data/tableData";
+import type { Row } from "../lib/types";
 import {
   Tooltip,
   TooltipContent,
@@ -34,6 +34,7 @@ import { Skeleton } from "@/components/ui/skeleton";
 
 export default function RankingsTable({
   rows,
+  ranks,
   showDetails,
   loading,
   selectedSortKey,
@@ -41,6 +42,7 @@ export default function RankingsTable({
   setSortState,
 }: {
   rows: Row[];
+  ranks: number[];
   showDetails: boolean;
   loading: boolean;
   selectedSortKey: keyof Row;
@@ -60,11 +62,11 @@ export default function RankingsTable({
                 </TableHead>
                 <THSortableLargeTooltip
                   width="lg"
-                  name="PLFI"
-                  full="Premier League Football Index"
+                  name="LFI"
+                  full="League Football Index"
                   sortKey="efi"
                   desc="Expected percent of possible points this team would
-                        take against an average Premier League opponent on a
+                        take against an average league opponent on a
                         neutral pitch."
                   note="Higher is better"
                   sortDesc={sortDesc}
@@ -77,7 +79,7 @@ export default function RankingsTable({
                   full="Offensive Rating"
                   sortKey="off"
                   desc="Expected goals this team would score against an average
-                        Premier League opponent on a neutral pitch."
+                        league opponent on a neutral pitch."
                   note="Higher is better"
                   sortDesc={sortDesc}
                   selectedSortKey={selectedSortKey}
@@ -89,7 +91,7 @@ export default function RankingsTable({
                   full="Defensive Rating"
                   sortKey="def"
                   desc="Expected goals this team would concede to an average
-                        Premier League opponent on a neutral pitch."
+                        league opponent on a neutral pitch."
                   note="Lower is better"
                   sortDesc={sortDesc}
                   selectedSortKey={selectedSortKey}
@@ -125,7 +127,10 @@ export default function RankingsTable({
                   selectedSortKey={selectedSortKey}
                   setSortState={setSortState}
                 />
-                <TableHead className="relative text-center text-gray-900 before:absolute before:left-2 before:top-1/2 before:-translate-y-1/2 before:text-[10px] before:font-normal before:text-gray-500 before:content-['1'] after:absolute after:right-2 after:top-1/2 after:-translate-y-1/2 after:text-[10px] after:font-normal after:text-gray-500 after:content-['20']">
+                <TableHead className="relative text-center text-gray-900">
+                  <div className="absolute left-2 top-1/2 -translate-y-1/2 select-none text-xxs font-normal leading-4 text-gray-500">
+                    {rows.length === 0 ? "" : 1}
+                  </div>
                   <Tooltip>
                     <TooltipTrigger>POS</TooltipTrigger>
                     <TooltipContent>
@@ -136,6 +141,9 @@ export default function RankingsTable({
                       />
                     </TooltipContent>
                   </Tooltip>
+                  <div className="absolute right-2 top-1/2 -translate-y-1/2 select-none text-xxs font-normal leading-4 text-gray-500">
+                    {rows.length === 0 ? "" : rows.length}
+                  </div>
                 </TableHead>
                 <THSortableLargeTooltip
                   width="sm"
@@ -241,7 +249,13 @@ export default function RankingsTable({
                     <SkeletonRow key={i} showDetails={showDetails} />
                   ))
                 : rows.map((r, i) => (
-                    <Row key={i} row={r} showDetails={showDetails} />
+                    <Row
+                      key={i}
+                      row={r}
+                      selectedSortKey={selectedSortKey}
+                      rank={ranks[i]}
+                      showDetails={showDetails}
+                    />
                   ))}
             </TableBody>
           </Table>
@@ -376,7 +390,17 @@ function StatExplainer({
   );
 }
 
-function Row({ row, showDetails }: { row: Row; showDetails: boolean }) {
+function Row({
+  row,
+  selectedSortKey,
+  rank,
+  showDetails,
+}: {
+  row: Row;
+  selectedSortKey: keyof Row;
+  rank: number;
+  showDetails: boolean;
+}) {
   const formLatestIndex = row.form.filter((r) => r !== null).length - 1;
 
   return (
@@ -407,12 +431,20 @@ function Row({ row, showDetails }: { row: Row; showDetails: boolean }) {
       <TableCell className="w-16 min-w-16 text-center text-base font-medium text-gray-900">
         {row.efi.toFixed(1)}
       </TableCell>
-      <TableCell className="w-12 min-w-12 text-center text-sm font-medium text-gray-900">
-        {row.off.toFixed(1)}
-      </TableCell>
-      <TableCell className="w-12 min-w-12 text-center text-sm font-medium text-gray-900">
-        {row.def.toFixed(1)}
-      </TableCell>
+      <RankableTableCell
+        value={row.off.toFixed(1)}
+        rank={rank}
+        sortKey="off"
+        selectedSortKey={selectedSortKey}
+        className="w-12 min-w-12 text-center text-sm font-medium text-gray-900"
+      />
+      <RankableTableCell
+        value={row.def.toFixed(1)}
+        rank={rank}
+        sortKey="def"
+        selectedSortKey={selectedSortKey}
+        className="w-12 min-w-12 text-center text-sm font-medium text-gray-900"
+      />
       <TableCell className="text-center text-sm font-medium">
         {row.prob_champion >= 1 ? (
           <div className="flex h-full w-full items-center justify-center">
@@ -471,44 +503,84 @@ function Row({ row, showDetails }: { row: Row; showDetails: boolean }) {
           probs={row.prob_positions}
         />
       </TableCell>
-      <TableCell className="w-12 min-w-12 text-center text-sm font-medium">
-        {row.avg_pts.toFixed()}
-      </TableCell>
-      <TableCell className="w-12 min-w-12 text-center text-sm font-medium">
-        {(
+      <RankableTableCell
+        value={row.avg_pts.toFixed()}
+        rank={rank}
+        sortKey="avg_pts"
+        selectedSortKey={selectedSortKey}
+        className="w-12 min-w-12 text-center text-sm font-medium"
+      />
+      <RankableTableCell
+        value={(
           (row.avg_gd > 0 ? "+" : "") + row.avg_gd.toFixed().replace("-0", "0")
         ).replace("+0", "0")}
-      </TableCell>
-      <TableCell className="w-10 min-w-10 text-center text-sm font-medium">
-        {row.mp}
-      </TableCell>
+        rank={rank}
+        sortKey="avg_gd"
+        selectedSortKey={selectedSortKey}
+        className="w-12 min-w-12 text-center text-sm font-medium"
+      />
+      <RankableTableCell
+        value={row.mp}
+        rank={rank}
+        sortKey="mp"
+        selectedSortKey={selectedSortKey}
+        className="w-10 min-w-10 text-center text-sm font-medium"
+      />
       {showDetails && (
         <>
-          <TableCell className="w-10 min-w-10 text-center text-sm font-medium">
-            {row.w}
-          </TableCell>
-          <TableCell className="w-10 min-w-10 text-center text-sm font-medium">
-            {row.d}
-          </TableCell>
-          <TableCell className="w-10 min-w-10 text-center text-sm font-medium">
-            {row.l}
-          </TableCell>
-          <TableCell className="w-10 min-w-10 text-center text-sm font-medium">
-            {row.gf}
-          </TableCell>
-          <TableCell className="w-10 min-w-10 text-center text-sm font-medium">
-            {row.ga}
-          </TableCell>
-          <TableCell className="w-10 min-w-10 text-center text-sm font-medium">
-            {(
+          <RankableTableCell
+            value={row.w}
+            rank={rank}
+            sortKey="w"
+            selectedSortKey={selectedSortKey}
+            className="w-10 min-w-10 text-center text-sm font-medium"
+          />
+          <RankableTableCell
+            value={row.d}
+            rank={rank}
+            sortKey="d"
+            selectedSortKey={selectedSortKey}
+            className="w-10 min-w-10 text-center text-sm font-medium"
+          />
+          <RankableTableCell
+            value={row.l}
+            rank={rank}
+            sortKey="l"
+            selectedSortKey={selectedSortKey}
+            className="w-10 min-w-10 text-center text-sm font-medium"
+          />
+          <RankableTableCell
+            value={row.gf}
+            rank={rank}
+            sortKey="gf"
+            selectedSortKey={selectedSortKey}
+            className="w-10 min-w-10 text-center text-sm font-medium"
+          />
+          <RankableTableCell
+            value={row.ga}
+            rank={rank}
+            sortKey="ga"
+            selectedSortKey={selectedSortKey}
+            className="w-10 min-w-10 text-center text-sm font-medium"
+          />
+          <RankableTableCell
+            value={(
               (row.gd > 0 ? "+" : "") + row.gd.toFixed().replace("-0", "0")
             ).replace("+0", "0")}
-          </TableCell>
+            rank={rank}
+            sortKey="gd"
+            selectedSortKey={selectedSortKey}
+            className="w-10 min-w-10 text-center text-sm font-medium"
+          />
         </>
       )}
-      <TableCell className="w-10 min-w-10 text-center text-sm font-medium">
-        {row.pts}
-      </TableCell>
+      <RankableTableCell
+        value={row.pts}
+        rank={rank}
+        sortKey="pts"
+        selectedSortKey={selectedSortKey}
+        className="w-10 min-w-10 text-center text-sm font-medium"
+      />
       <TableCell>
         <div className="flex w-fit min-w-24 flex-row items-center gap-1">
           {row.form.map((r, i) => (
@@ -517,6 +589,31 @@ function Row({ row, showDetails }: { row: Row; showDetails: boolean }) {
         </div>
       </TableCell>
     </TableRow>
+  );
+}
+
+function RankableTableCell({
+  value,
+  rank,
+  sortKey,
+  selectedSortKey,
+  className,
+}: {
+  value: string | number;
+  rank: number;
+  sortKey: keyof Row;
+  selectedSortKey: keyof Row;
+  className: string;
+}) {
+  return (
+    <TableCell className={`relative ${className}`}>
+      {value}
+      {sortKey === selectedSortKey && (
+        <div className="absolute right-0 top-2.5 w-3.5 select-none px-1 text-left text-xxs font-normal text-teal-500">
+          {rank}
+        </div>
+      )}
+    </TableCell>
   );
 }
 

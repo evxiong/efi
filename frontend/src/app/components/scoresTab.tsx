@@ -1,6 +1,6 @@
 "use client";
 
-import type { Score as ScoreType } from "../data/scoreData";
+import type { Competition, Score as ScoreType, Season } from "../lib/types";
 import Score from "./score";
 import {
   Accordion,
@@ -21,10 +21,14 @@ import { useEffect, useState } from "react";
 import { Skeleton } from "@/components/ui/skeleton";
 import useSWR from "swr";
 
-export default function ScoresTab() {
+export default function ScoresTab({
+  competition,
+}: {
+  competition: Competition;
+}) {
   const fetcher = (url: string) => fetch(url).then((r) => r.json());
   const { data: latest, mutate: mutateLatest } = useSWR(
-    "/api/latest",
+    `/api/latest?competition=${competition.id}`,
     fetcher,
     {
       revalidateOnFocus: false,
@@ -34,16 +38,25 @@ export default function ScoresTab() {
     },
   );
 
-  const matchweeks = [...Array(38)].map(
-    (_, i) => "Matchweek " + (i + 1).toFixed(),
-  );
-  const [matchweek, setMatchweek] = useState<number | null>(null);
-  const seasons: number[] = latest ? latest.latest.seasons : [];
+  const seasons: number[] = latest?.latest
+    ? latest.latest.seasons.map((s: Season) => s.season)
+    : [];
   const seasonOptions = seasons.map((d) => `${d}/${(d + 1) % 100}`);
+  const [matchweek, setMatchweek] = useState<number | null>(null);
   const [season, setSeason] = useState<number | null>(null);
 
+  const matchweeks: string[] = [
+    ...Array(
+      latest?.latest
+        ? latest.latest.seasons.at(
+            latest.latest.seasons.findIndex((s: Season) => s.season === season),
+          ).matchweeks
+        : 0,
+    ),
+  ].map((_, i) => "Matchweek " + (i + 1).toFixed());
+
   const { data, isLoading } = useSWR(
-    `/api/scores?matchweek=${matchweek}&season=${season}`,
+    `/api/scores?competition=${competition.id}&season=${season}&matchweek=${matchweek}`,
     fetcher,
     {
       revalidateOnFocus: false,
@@ -54,9 +67,15 @@ export default function ScoresTab() {
   );
 
   useEffect(() => {
-    if (latest === undefined) return;
-    setMatchweek(latest.latest.scores.matchweek);
-    setSeason(latest.latest.scores.season);
+    if (matchweek !== null && matchweek > matchweeks.length) {
+      setMatchweek(matchweeks.length);
+    }
+  }, [season, matchweek, matchweeks.length]);
+
+  useEffect(() => {
+    if (latest === undefined || !latest.latest) return;
+    setMatchweek(latest.latest?.scores.matchweek);
+    setSeason(latest.latest?.scores.season);
   }, [latest]);
 
   useEffect(() => {
@@ -89,7 +108,7 @@ export default function ScoresTab() {
   return (
     <div className="flex w-full flex-col">
       <section className="mx-auto flex w-full max-w-7xl px-4 sm:px-6">
-        <div className="mb-20 flex w-full flex-col gap-4 pt-2">
+        <div className="mb-10 flex w-full flex-col gap-4 pt-2">
           <div className="flex flex-col gap-6 md:flex-row md:items-center md:justify-between">
             <div className="flex flex-row gap-2.5">
               <Select
@@ -133,7 +152,7 @@ export default function ScoresTab() {
             </div>
             <div className="text-xs font-medium text-gray-500 md:text-right">
               <p>All times shown in your local time.</p>
-              <p>Scores update daily around midnight London time.</p>
+              <p>Scores update daily around midnight UTC.</p>
             </div>
           </div>
           {matchweek === null || isLoading ? (
