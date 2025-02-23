@@ -435,7 +435,7 @@ def update(competition_id: int, season: int):
         update_predictions(competition_id, season, AVG_BASE, HOME_ADVANTAGE)
 
     print("Writing to MongoDB cloud...")
-    mongo.upsert_all(competition_id)
+    mongo.upsert_all(competition_id, season)
 
 
 if __name__ == "__main__":

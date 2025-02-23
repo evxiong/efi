@@ -665,7 +665,7 @@ def get_matches_for_predictions(
     ]
 
 
-def get_mongo_tables(competition_id: int) -> pd.DataFrame:
+def get_mongo_tables(competition_id: int, season: int | None = None) -> pd.DataFrame:
     with duckdb.connect(DB_FILE) as con:
         df = con.execute(
             """
@@ -697,7 +697,7 @@ def get_mongo_tables(competition_id: int) -> pd.DataFrame:
                     LEFT JOIN matches m ON h.match_id = m.id 
                     JOIN clubs c ON h.club_id = c.id
                     JOIN projections p ON p.season = h.season AND p.club_id = h.club_id AND (m.time IS NULL OR m.time < p.update_date + 1)
-                    WHERE h.competition_id = ?
+                    WHERE h.competition_id = $competition_id AND ($season IS NULL or h.season = $season)
                     ORDER BY h.season ASC, p.matchweek ASC, m.time DESC, h.club_id
                 )
                 ORDER BY season, matchweek, efi DESC
@@ -707,12 +707,14 @@ def get_mongo_tables(competition_id: int) -> pd.DataFrame:
             LEFT JOIN cte b ON a.season = b.season AND a.name = b.name AND a.matchweek = b.matchweek + 1
             ORDER BY a.season, a.matchweek, a.efi DESC
             """,
-            [competition_id],
+            {"competition_id": competition_id, "season": season},
         ).df()
     return df
 
 
-def get_mongo_matchweek_counts(competition_id: int) -> pd.DataFrame:
+def get_mongo_matchweek_counts(
+    competition_id: int, season: int | None = None
+) -> pd.DataFrame:
     with duckdb.connect(DB_FILE) as con:
         df = con.execute(
             """
@@ -722,10 +724,10 @@ def get_mongo_matchweek_counts(competition_id: int) -> pd.DataFrame:
                 COUNT(*) FILTER (completed = TRUE) AS completed_matches,
                 COUNT(*) AS total_matches
             FROM matches
-            WHERE competition_id = ?
+            WHERE competition_id = $competition_id AND ($season IS NULL or season = $season)
             GROUP BY season, display_with_matchweek
             """,
-            [competition_id],
+            {"competition_id": competition_id, "season": season},
         ).df()
     return df
 
@@ -755,7 +757,7 @@ def get_mongo_scores(competition_id: int, season: int | None = None) -> pd.DataF
                 m.display_with_matchweek
             FROM matches m
             JOIN clubs c1 ON m.club_id_1 = c1.id
-            JOIN Clubs c2 ON m.club_id_2 = c2.id
+            JOIN clubs c2 ON m.club_id_2 = c2.id
             WHERE competition_id = $competition_id AND ($season IS NULL or m.season = $season)
             ORDER BY season DESC, matchweek DESC, time
             """,

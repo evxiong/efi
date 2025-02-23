@@ -14,17 +14,20 @@ from pymongo import MongoClient, UpdateOne
 load_dotenv()
 
 
-def prepare_tables(competition_id: int) -> list[UpdateOne]:
-    """Prepares bulk write requests for tables from all seasons.
+def prepare_tables(competition_id: int, season: int | None = None) -> list[UpdateOne]:
+    """Prepares bulk write requests for tables from given season.
 
     Args:
         competition_id (int): competition's db id, ex. 1 for Premier League
+        season (int | None, optional): earlier year of season (ex. 2016 means
+            2016/17); if None, prepares tables from all seasons. Defaults to
+            None.
 
     Returns:
         list[UpdateOne]: list of upsert requests, one per unique
             season/matchweek
     """
-    df = db.get_mongo_tables(competition_id)
+    df = db.get_mongo_tables(competition_id, season)
     rows = df.to_dict(orient="records")
     map = defaultdict(lambda: defaultdict(list))
     for row in rows:
@@ -33,7 +36,7 @@ def prepare_tables(competition_id: int) -> list[UpdateOne]:
         map[row["season"]][row["matchweek"]].append(row)
 
     counts_map = defaultdict(dict)
-    df = db.get_mongo_matchweek_counts(competition_id)
+    df = db.get_mongo_matchweek_counts(competition_id, season)
     counts = df.to_dict(orient="records")
     for c in counts:
         counts_map[c["season"]][c["matchweek"]] = (
@@ -147,8 +150,13 @@ def prepare_latest(competition_id: int) -> list[UpdateOne]:
     ]
 
 
-def upsert_all(competition_id: int):
-    """Upserts tables and scores from all seasons, as well as latest info.
+def upsert_all(competition_id: int, season: int | None = None):
+    """Upserts tables and scores from given season, as well as latest info.
+
+    Args:
+        competition_id (int): competition's db id, ex. 1 for Premier League
+        season (int | None, optional): earlier year of season (ex. 2016 means
+            2016/17); if None, upserts from all seasons. Defaults to None.
 
     Raises:
         Exception: PyMongo exception
@@ -160,11 +168,11 @@ def upsert_all(competition_id: int):
         db = client["efi"]
 
         tables = db["tables"]
-        requests = prepare_tables(competition_id)
+        requests = prepare_tables(competition_id, season)
         tables.bulk_write(requests)
 
         scores = db["scores"]
-        requests = prepare_scores(competition_id)
+        requests = prepare_scores(competition_id, season)
         scores.bulk_write(requests)
 
         latest = db["latest"]
@@ -177,4 +185,4 @@ def upsert_all(competition_id: int):
 
 if __name__ == "__main__":
     for competition_id in range(1, 6):
-        upsert_all(competition_id)
+        upsert_all(competition_id, 2024)
