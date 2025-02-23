@@ -18,9 +18,10 @@ from .data import (
     Club,
     TransferValue,
     Club_Competition,
+    IdType,
 )
 from collections import deque
-from datetime import datetime, date
+from datetime import date
 
 DB_FILE = "efi.db"
 
@@ -339,6 +340,22 @@ def get_clubs(competition_id: int, season: int) -> list[Club]:
             [competition_id, season],
         ).fetchall()
     return [Club(*r) for r in results]
+
+
+def get_clubs_by_id_map(
+    id: IdType, competition_id: int, season: int
+) -> dict[str, Club]:
+    with duckdb.connect(DB_FILE) as con:
+        results = con.execute(
+            """
+            SELECT c.*
+            FROM clubs c
+            JOIN clubs_competitions cc ON cc.club_id = c.id
+            WHERE cc.competition_id = ? AND cc.season = ? 
+            """,
+            [competition_id, season],
+        ).fetchall()
+    return {r[id.value]: Club(*(r)) for r in results}
 
 
 def get_club_by_fotmob_id(fotmob_id: str) -> Club | None:

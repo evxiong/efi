@@ -1,11 +1,20 @@
 """
-Dataclass definitions.
+Dataclass and enum definitions.
 """
 
 from collections import deque
 from dataclasses import dataclass
 from datetime import datetime, date
 from decimal import Decimal
+from enum import Enum
+
+
+class IdType(Enum):
+    # name -> col index in clubs table
+    OFFICIAL = 6
+    FOTMOB = 7
+    FBREF = 8
+    TRANSFERMARKT = 9
 
 
 @dataclass(kw_only=True)
