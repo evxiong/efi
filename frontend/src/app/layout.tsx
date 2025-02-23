@@ -2,6 +2,7 @@ import { Doppio_One, IBM_Plex_Sans } from "next/font/google";
 import "./globals.css";
 import Navbar from "./components/navbar";
 import { GoogleAnalytics } from "@next/third-parties/google";
+import { Metadata } from "next";
 
 const ibmPlexSans = IBM_Plex_Sans({
   weight: ["300", "400", "500", "600"],
@@ -15,10 +16,13 @@ const doppioOne = Doppio_One({
   subsets: ["latin"],
 });
 
-export const metadata = {
+export const metadata: Metadata = {
   title: "EFI - European Football Index",
   description:
     "Premier League, LaLiga, Serie A, Bundesliga, and Ligue 1 match predictions, power rankings, and season projections.",
+  verification: {
+    google: "X8t21nrIXKM325DwanzKeqyHu1Kn7g58gkRgiPjSSgs",
+  },
 };
 
 export default function RootLayout({
