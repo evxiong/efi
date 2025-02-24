@@ -6,3 +6,5 @@ __pycache__
 *.wal
 *.tmp/
 log.txt
+data/external
+data/temp

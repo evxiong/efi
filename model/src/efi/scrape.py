@@ -257,13 +257,6 @@ class Fotmob:
             if isinstance(m["roundName"], int)
         ]
 
-    # def get_home_table(self, season: int, fotmob_competition_id: int = 47):
-    #     r = self.session.get(
-    #         f"https://www.fotmob.com/api/leagues?id={fotmob_competition_id}&season={season}/{season+1}"
-    #     )
-    #     data = r.json()
-    #     return data["table"][0]["data"]["table"]["home"]
-
     def get_completed_match_stats(
         self, competition_id: int, season: int, fotmob_match_id: str
     ) -> Match:
