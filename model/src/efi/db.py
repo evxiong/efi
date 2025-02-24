@@ -1155,6 +1155,7 @@ def evaluate_rps(
                     ) as rps
                 FROM matches
                 WHERE
+                    prob_1 IS NOT NULL AND prob_d IS NOT NULL AND prob_2 IS NOT NULL AND score_1 IS NOT NULL AND score_2 IS NOT NULL AND
                     ($competition_id IS NULL OR competition_id = $competition_id) AND
                     ($start IS NULL OR season >= $start) AND
                     ($end IS NULL OR season < $end)
@@ -1204,6 +1205,7 @@ def evaluate_ign(
                     ) as ign
                 FROM matches
                 WHERE
+                    prob_1 IS NOT NULL AND prob_d IS NOT NULL AND prob_2 IS NOT NULL AND score_1 IS NOT NULL AND score_2 IS NOT NULL AND
                     ($competition_id IS NULL OR competition_id = $competition_id) AND
                     ($start IS NULL OR season >= $start) AND
                     ($end IS NULL OR season < $end)
@@ -1255,6 +1257,7 @@ def evaluate_bs(
                     ) as bs
                 FROM matches
                 WHERE
+                    prob_1 IS NOT NULL AND prob_d IS NOT NULL AND prob_2 IS NOT NULL AND score_1 IS NOT NULL AND score_2 IS NOT NULL AND
                     ($competition_id IS NULL OR competition_id = $competition_id) AND
                     ($start IS NULL OR season >= $start) AND
                     ($end IS NULL OR season < $end)

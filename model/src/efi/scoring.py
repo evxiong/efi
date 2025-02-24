@@ -51,9 +51,9 @@ def compute_bs(probs: list[float], outcome: list[int]) -> float:
             [1,0,0] -> home win, [0,1,0] -> draw, [0,0,1] -> away win
 
     Returns:
-        float: Brier score (range: 0 to 1)
+        float: Brier score (range: 0 to 2)
     """
     sum_bs = 0
     for i in range(len(outcome)):
         sum_bs += (probs[i] - outcome[i]) ** 2.0
-    return sum_bs / len(outcome)
+    return sum_bs
