@@ -9,7 +9,7 @@ Versioning is as follows:
   changes
 - Minor version number incremented when new features added
 
-## Unreleased
+## [Unreleased]
 
 ### Planned for [1.1] ~ Apr. 2025
 
@@ -39,7 +39,7 @@ Versioning is as follows:
 
 ### Fixed
 
-- Fix multiclass Brier score formula in scoring module and README.
+- Multiclass Brier score formula in scoring module and README.
 
 ### Changed
 
@@ -51,3 +51,7 @@ Versioning is as follows:
 ### Added
 
 - Support for Premier League only.
+
+[0.1]: https://github.com/evxiong/efi/releases/tag/v0.1
+[1.0]: https://github.com/evxiong/efi/compare/v0.1...v1.0
+[unreleased]: https://github.com/evxiong/efi/compare/v1.0...HEAD
