@@ -1,8 +1,14 @@
-<p align="center">
+<div align="center">
   <a href="https://plfi.vercel.app" target="_blank" rel="noopener noreferrer">
-    <img src="/frontend/src/app/apple-icon.png" width="50" alt="EFI logo">
+    <picture>
+      <source media="(prefers-color-scheme: dark)" srcset="/assets/logo-light.svg">
+      <source media="(prefers-color-scheme: light)" srcset="/assets/logo-dark.svg">
+      <img alt="EFI logo" height="40" src="/assets/logo-dark.svg">
+    </picture>
   </a>
-</p>
+</div>
+
+<br/>
 
 <div align="center">
 
@@ -16,6 +22,8 @@ EFI currently supports the Big Five European leagues: <br/>🏴󠁧󠁢󠁥󠁮�
 [Changelog](/CHANGELOG.md)&nbsp;&nbsp;·&nbsp;&nbsp;
 [Methodology](https://github.com/evxiong/efi/wiki/Methodology)
 </div>
+
+<br/>
 
 ## Introduction
 
