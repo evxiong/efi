@@ -1,3 +1,4 @@
+import { notFound } from "next/navigation";
 import { LEAGUES } from "../lib/constants";
 import Header from "./header";
 import Scoreboard from "./scoreboard";
@@ -11,7 +12,12 @@ export default async function LeagueLayout({
   params: Promise<{ league: string }>;
 }>) {
   const leagueSlug = (await params).league;
-  const competition = LEAGUES.find((c) => c.slug === leagueSlug)!;
+  const competition = LEAGUES.find((c) => c.slug === leagueSlug);
+
+  if (competition === undefined) {
+    notFound();
+  }
+
   return (
     <div className="flex w-full flex-col">
       <Scoreboard competition={competition} />

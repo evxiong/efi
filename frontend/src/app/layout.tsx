@@ -17,7 +17,10 @@ const doppioOne = Doppio_One({
 });
 
 export const metadata: Metadata = {
-  title: "EFI - European Football Index",
+  title: {
+    template: "%s | EFI",
+    default: "EFI - European Football Index",
+  },
   description:
     "Premier League, LaLiga, Serie A, Bundesliga, and Ligue 1 match predictions, power rankings, and season projections.",
   verification: {
