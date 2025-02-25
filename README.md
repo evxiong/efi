@@ -1,8 +1,8 @@
 <div align="center">
   <a href="https://plfi.vercel.app" target="_blank" rel="noopener noreferrer">
     <picture>
-      <source media="(prefers-color-scheme: dark)" srcset="/assets/logo-light.svg">
-      <source media="(prefers-color-scheme: light)" srcset="/assets/logo-dark.svg">
+      <source media="(prefers-color-scheme: dark)" srcset="/assets/logo-dark.svg">
+      <source media="(prefers-color-scheme: light)" srcset="/assets/logo-light.svg">
       <img alt="EFI logo" height="40" src="/assets/logo-dark.svg">
     </picture>
   </a>
