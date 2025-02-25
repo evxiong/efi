@@ -4,10 +4,10 @@ Functions for updating populated DuckDB database with newly completed matches.
 Run `python -m src.efi.update` from inside `model/` to perform daily updates.
 """
 
-from . import db
-from . import model
-from . import mongo
-from . import scrape
+import os
+import sys
+import time
+from . import db, model, mongo, scrape
 from .data import Match, Projection, TableSnapshot, ClubSnapshot
 from datetime import date, datetime, timedelta, timezone
 from tqdm import tqdm
@@ -247,12 +247,15 @@ def update_display_matchweeks(competition_id: int, season: int):
     db.update_matches_display_matchweek(matches)  # type: ignore
 
 
-def update(competition_id: int, season: int):
+def update(competition_id: int, season: int) -> int:
     """Updates databases with newly completed matches in given competition.
 
     Args:
         competition_id (int): competition's db id, ex. 1 for Premier League
         season (int): earlier year of season (ex. 2016 means 2016/17)
+
+    Returns:
+        int: number of newly completed matches
     """
     # Get all matches in season from fotmob
     # Update all match times, display matchweeks, broadcasters
@@ -437,13 +440,27 @@ def update(competition_id: int, season: int):
     print("Writing to MongoDB cloud...")
     mongo.upsert_all(competition_id, season)
 
+    return len(new_completed_matches)
+
 
 if __name__ == "__main__":
     try:
+        start = time.time()
+        if sys.stdout is None:
+            nullfile = open(os.devnull, "w")
+            sys.stdout = nullfile
+            sys.stderr = nullfile
+        log_new_matches = ""
         for competition_id in range(1, 6):
-            update(competition_id, 2024)
+            new_matches = update(competition_id, 2024)
+            log_new_matches += f"{competition_id}:{new_matches},"
+        end = time.time()
+        elapsed = int(end - start)
+        m, s = divmod(elapsed, 60)
         with open("log.txt", "a+") as fd:
-            fd.write(f"{datetime.now(timezone.utc).strftime("%Y-%m-%dT%H:%M:%SZ")}\n")
+            fd.write(
+                f"{datetime.now(timezone.utc).strftime("%Y-%m-%dT%H:%M:%SZ")} {f"{m:02d}:{s:02d}"} {log_new_matches[:-1]}\n"
+            )
     except Exception as e:
         with open("log.txt", "a+") as fd:
             fd.write(
