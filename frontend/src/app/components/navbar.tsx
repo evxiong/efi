@@ -65,7 +65,7 @@ export default function Navbar() {
               <Link
                 key={i}
                 href={"/" + league.slug}
-                className={`${pathname.endsWith("/" + league.slug) ? "-mb-[1px] border-b border-teal-500 font-semibold text-gray-900" : "hover:-mb-[1px] hover:border-b hover:border-gray-400 hover:text-gray-700"} box-border flex h-full flex-shrink-0 flex-row items-center gap-2 p-2`}
+                className={`${pathname === `/${league.slug}` || pathname === `/${league.slug}/scores` ? "-mb-[1px] border-b border-teal-500 font-semibold text-gray-900" : "hover:-mb-[1px] hover:border-b hover:border-gray-400 hover:text-gray-700"} box-border flex h-full flex-shrink-0 flex-row items-center gap-2 p-2`}
               >
                 <div className="relative h-6 w-6">
                   <Image
