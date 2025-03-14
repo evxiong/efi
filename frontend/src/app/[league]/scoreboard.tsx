@@ -67,9 +67,17 @@ export default function Scoreboard({
   // ms between today and match date, neg if before now, pos if after now
   let closestDist: number | null = null;
 
-  if (!isLoading_1 && !isLoading_2 && scores_1 && scores_2) {
+  if (!isLoading_1 && !isLoading_2 && scores_1 && scores_2 && latest.latest) {
     for (const data of [scores_1, scores_2]) {
       for (let i = 0; i < data.scores.length; i++) {
+        if (
+          data.scores[i].display_with_matchweek !==
+            latest.latest.scores.matchweek &&
+          data.scores[i].display_with_matchweek !==
+            latest.latest.scores.matchweek + 1
+        ) {
+          continue;
+        }
         const date = new Date(data.scores[i].time);
         if (!seenDates.has(date.toDateString())) {
           scoreboard.push(date);
